@@ -70,4 +70,11 @@ public class MemberGroup {
 	/* =================================================================
 	 * Business
 	   ================================================================= */
+
+	public void updateGroupInfo(String groupKey, String groupNm, String groupPath) {
+		this.groupKey = groupKey;
+		this.groupNm = groupNm;
+		this.groupPath = groupPath;
+	}
+
 }

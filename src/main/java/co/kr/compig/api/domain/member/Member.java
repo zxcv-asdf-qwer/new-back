@@ -2,9 +2,16 @@ package co.kr.compig.api.domain.member;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.ColumnDefault;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.FederatedIdentityRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -17,6 +24,10 @@ import co.kr.compig.global.code.UserType;
 import co.kr.compig.global.code.converter.DeptCodeConverter;
 import co.kr.compig.global.code.converter.UserTypeConverter;
 import co.kr.compig.global.embedded.CreatedAndUpdated;
+import co.kr.compig.global.error.exception.BizException;
+import co.kr.compig.global.error.exception.KeyCloakRequestException;
+import co.kr.compig.global.keycloak.KeycloakHandler;
+import co.kr.compig.global.keycloak.KeycloakHolder;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -123,11 +134,97 @@ public class Member {
 	/* =================================================================
 	 * Relation method
 	   ================================================================= */
+
+	public void addGroups(final MemberGroup group) {
+		this.groups.add(group);
+		group.setMember(this);
+	}
+
+	private void removeAllGroups(Set<MemberGroup> MemberGroups) {
+		if (MemberGroups == null) {
+			throw new BizException("group key 가 없습니다.");
+		}
+		this.groups.removeAll(MemberGroups);
+	}
+
 	/* =================================================================
 	 * Default columns
 	   ================================================================= */
 	@Embedded
 	@Builder.Default
 	private CreatedAndUpdated createdAndModified = new CreatedAndUpdated();
+
+  /* =================================================================
+   * Business
+     ================================================================= */
+
+	private boolean isExistGroups() {
+		return CollectionUtils.isNotEmpty(this.groups);
+	}
+
+	/**
+	 * Keycloak 사용자 생성
+	 */
+	public void createUserKeyCloak(String providerId, String providerUsername)
+		throws KeyCloakRequestException {
+		KeycloakHandler keycloakHandler = KeycloakHolder.get();
+		UserRepresentation userRepresentation =
+			keycloakHandler.createUser(this.getUserRepresentation(providerId, providerUsername));
+		this.id = userRepresentation.getId();
+		if (isExistGroups()) {
+			keycloakHandler.usersJoinGroups(this.id, this.getGroups());
+		}
+	}
+
+	/**
+	 * Keycloak UserRepresentation
+	 */
+	public UserRepresentation getUserRepresentation(String providerId, String providerUsername) {
+		UserRepresentation userRepresentation = new UserRepresentation();
+		String userNm = this.userNm;
+		if (userNm != null) {
+			String[] userNmSplit = userNm.split(" ");
+			String firstName = userNmSplit[0];
+			String lastName = userNmSplit.length > 1 ? userNmSplit[1] : userNmSplit[0];
+			userRepresentation.setFirstName(firstName);
+			userRepresentation.setLastName(lastName);
+		}
+
+		userRepresentation.setId(this.id);
+		userRepresentation.setUsername(Optional.ofNullable(this.userId).orElseGet(() -> this.email));
+		userRepresentation.setEmail(this.email);
+		userRepresentation.setEnabled(true);
+
+		if (!MemberRegisterType.GENERAL.equals(this.memberRegisterType) && StringUtils.isNotBlank(
+			providerUsername)) {
+			String socialProvider = this.memberRegisterType.getCode().toLowerCase();
+
+			FederatedIdentityRepresentation federatedIdentityRepresentation = new FederatedIdentityRepresentation();
+			federatedIdentityRepresentation.setUserId(providerId);
+			federatedIdentityRepresentation.setUserName(providerUsername);
+			federatedIdentityRepresentation.setIdentityProvider(socialProvider);
+			userRepresentation.setFederatedIdentities(List.of(federatedIdentityRepresentation));
+			userRepresentation.setEmailVerified(true);
+		}
+
+		if (!isPasswordEncoded()) {
+			CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
+			credentialRepresentation.setType("password");
+			credentialRepresentation.setValue(this.userPw);
+			userRepresentation.setCredentials(List.of(credentialRepresentation));
+		}
+
+		return userRepresentation;
+	}
+
+	public boolean isPasswordEncoded() {
+		return StringUtils.defaultString(this.userPw).startsWith("{bcrypt}");
+	}
+
+	public void passwordEncode() {
+		if (!isPasswordEncoded()) {
+			this.userPw = KeycloakHolder.get().getPasswordEncoder().encode(this.userPw);
+		}
+	}
 
 }
