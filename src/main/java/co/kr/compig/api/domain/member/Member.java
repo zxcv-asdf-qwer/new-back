@@ -1,5 +1,8 @@
 package co.kr.compig.api.domain.member;
 
+import static co.kr.compig.global.utils.KeyGen.*;
+import static co.kr.compig.global.utils.PasswordValidation.*;
+
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +20,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import co.kr.compig.api.domain.permission.MenuPermission;
+import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
 import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
 import co.kr.compig.api.presentation.member.response.MemberResponse;
 import co.kr.compig.global.code.DeptCode;
@@ -220,6 +224,14 @@ public class Member {
 		return userRepresentation;
 	}
 
+	public void updateUserKeyCloak() {
+		KeycloakHandler keycloakHandler = KeycloakHolder.get();
+		keycloakHandler.updateUser(this.getUserRepresentation(null, null));
+		if (isExistGroups()) {
+			keycloakHandler.usersJoinGroups(this.id, this.getGroups());
+		}
+	}
+
 	public boolean isPasswordEncoded() {
 		return StringUtils.defaultString(this.userPw).startsWith("{bcrypt}");
 	}
@@ -268,5 +280,63 @@ public class Member {
 			this.groups.stream().map(MemberGroup::converterDto).collect(Collectors.toSet()));
 		memberResponse.setCreatedAndUpdated(this.createdAndModified);
 		return memberResponse;
+	}
+
+	public void updateAdminMember(AdminMemberUpdate adminMemberUpdate) {
+		if (isUpdateUserPw(adminMemberUpdate.getNewUserPw(), adminMemberUpdate.getChkUserPw())) { // 비밀번호 변경의사 있음
+			if (!isUpdatableUserPw(adminMemberUpdate.getNewUserPw(),
+				adminMemberUpdate.getChkUserPw())) { // 모든 비밀번호 영역 값 입력 확인
+				throw new BizException("모든 비밀번호를 입력해주세요.");
+			}
+			if (!isEqualsNewUserPw(adminMemberUpdate.getNewUserPw(),
+				adminMemberUpdate.getChkUserPw())) { // 새 비밀번호와 확인의 동일 확인
+				throw new BizException("새 비밀번호와 비밀번호 확인의 내용이 다릅니다.");
+			}
+			this.userPw = adminMemberUpdate.getNewUserPw();
+		}
+		if (StringUtils.isNotEmpty(adminMemberUpdate.getUserNm())) {
+			this.userNm = adminMemberUpdate.getUserNm();
+		}
+		if (StringUtils.isNotEmpty(adminMemberUpdate.getEmail())) {
+			this.email = adminMemberUpdate.getEmail();
+		}
+		if (StringUtils.isNotEmpty(adminMemberUpdate.getTelNo())) {
+			this.telNo = adminMemberUpdate.getTelNo();
+		}
+		if (adminMemberUpdate.getDeptCode() != null) {
+			this.userType =
+				adminMemberUpdate.getDeptCode().equals(DeptCode.DEVELOPER) ? UserType.SYS_ADMIN : UserType.SYS_USER;
+			this.deptCode = adminMemberUpdate.getDeptCode();
+		}
+
+		this.removeAllGroups(
+			this.groups.stream()
+				.filter(
+					memberGroup ->
+						adminMemberUpdate.getGroupKeys().stream()
+							.filter(memberGroup::equalsGroupKey)
+							.findAny()
+							.isEmpty())
+				.collect(Collectors.toSet()));
+
+		for (String groupKey : adminMemberUpdate.getGroupKeys()) {
+			Optional<MemberGroup> optional =
+				this.groups.stream().filter(g -> g.getGroupKey().equals(groupKey)).findFirst();
+
+			if (optional.isEmpty()) {
+				this.addGroups(MemberGroup.builder().groupKey(groupKey).build());
+			}
+		}
+	}
+
+	public void setLeaveMember(String leaveReason) {
+		String del = getRandomKey("del");
+		this.userId = del.concat(this.userId);
+		this.email = this.email != null ? del.concat(this.email) : null;
+		if (StringUtils.isNotEmpty(leaveReason)) {
+			this.leaveReason = leaveReason;
+		}
+		this.leaveDate = LocalDate.now();
+		this.useYn = UseYn.N;
 	}
 }

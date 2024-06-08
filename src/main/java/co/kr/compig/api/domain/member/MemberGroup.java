@@ -88,4 +88,8 @@ public class MemberGroup {
 		return groupDto;
 	}
 
+	public boolean equalsGroupKey(String groupKey) {
+		return this.groupKey != null && this.groupKey.equals(groupKey);
+	}
+
 }

@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.kr.compig.api.application.member.MemberService;
 import co.kr.compig.api.presentation.member.request.AdminMemberCreate;
+import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
 import co.kr.compig.api.presentation.member.request.MemberSearchRequest;
 import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
 import co.kr.compig.global.dto.Response;
@@ -57,6 +59,22 @@ public class AdminMemberController {
 	@GetMapping("/{memberId}")
 	public ResponseEntity<AdminMemberResponse> getAdminByMemberId(@PathVariable String memberId) {
 		return ResponseEntity.ok(memberService.getMemberResponseByMemberId(memberId));
+	}
+
+	@Operation(summary = "관리자 memberId 수정")
+	@PutMapping("/{memberId}")
+	public ResponseEntity<Response<?>> updateAdminById(@PathVariable String memberId,
+		@RequestBody @Valid AdminMemberUpdate adminMemberUpdate) {
+		return ResponseEntity.ok().body(Response.<Map<String, String>>builder()
+			.data(Map.of("memberId", memberService.updateAdminById(memberId, adminMemberUpdate)))
+			.build());
+	}
+
+	@Operation(summary = "관리자 탈퇴")
+	@PutMapping("/{memberId}/leave")
+	public ResponseEntity<Response<?>> updateAdminById(@PathVariable String memberId) {
+		memberService.doUserLeave(memberId);
+		return ResponseEntity.ok().build();
 	}
 
 }

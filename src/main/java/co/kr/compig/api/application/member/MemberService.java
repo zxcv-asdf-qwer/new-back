@@ -1,5 +1,7 @@
 package co.kr.compig.api.application.member;
 
+import static co.kr.compig.api.domain.member.QMember.*;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -9,18 +11,24 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import co.kr.compig.api.domain.member.Member;
 import co.kr.compig.api.domain.member.MemberGroup;
 import co.kr.compig.api.domain.member.MemberGroupRepository;
 import co.kr.compig.api.domain.member.MemberRepository;
 import co.kr.compig.api.domain.member.MemberRepositoryCustom;
 import co.kr.compig.api.presentation.member.request.AdminMemberCreate;
+import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
+import co.kr.compig.api.presentation.member.request.LeaveRequest;
 import co.kr.compig.api.presentation.member.request.MemberSearchRequest;
 import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
+import co.kr.compig.global.code.UseYn;
 import co.kr.compig.global.code.UserType;
 import co.kr.compig.global.error.exception.BizException;
 import co.kr.compig.global.error.exception.NotExistDataException;
 import co.kr.compig.global.keycloak.KeycloakHandler;
+import co.kr.compig.global.keycloak.KeycloakHolder;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +43,7 @@ public class MemberService {
 	private final MemberRepositoryCustom memberRepositoryCustom;
 	private final MemberGroupRepository memberGroupRepository;
 	private final KeycloakHandler keycloakHandler;
+	private final JPAQueryFactory jpaQueryFactory;
 
 	public String adminCreate(AdminMemberCreate adminMemberCreate) {
 		Member member = adminMemberCreate.convertEntity();
@@ -82,17 +91,56 @@ public class MemberService {
 	}
 
 	@Transactional(readOnly = true)
+	public Member getAbleMemberById(String memberId) {
+		Member member1 = jpaQueryFactory
+			.selectFrom(member)
+			.where(member.useYn.eq(UseYn.Y)
+				.and(member.id.eq(memberId))
+			).fetchFirst();
+		return Optional.ofNullable(member1).orElseThrow(NotExistDataException::new);
+	}
+
+	@Transactional(readOnly = true)
 	public Member getMemberByIdSecurity(String memberId) {
 		return memberRepository.findById(memberId).orElse(null);
 	}
 
 	@Transactional(readOnly = true)
 	public AdminMemberResponse getMemberResponseByMemberId(String memberId) {
-		Member member = this.getMemberById(memberId);
+		Member member = this.getAbleMemberById(memberId);
 		if (!(member.getUserType() == UserType.SYS_ADMIN || member.getUserType() == UserType.SYS_USER)) {
 			throw new BizException("권한이 없습니다.");
 		}
 		return member.toAdminMemberResponse();
+	}
+
+	public String updateAdminById(String memberId, AdminMemberUpdate adminMemberUpdate) {
+		Member memberById = this.getAbleMemberById(memberId);
+		memberById.updateAdminMember(adminMemberUpdate);
+		setReferenceDomain(memberById.getUserType(), memberById);
+		memberById.updateUserKeyCloak();
+		memberById.passwordEncode();
+		return memberById.getId();
+	}
+
+	public void doUserLeave(String memberId) {
+		Member member = getAbleMemberById(memberId);
+		doUserLeave(member, null);
+	}
+
+	public void doUserLeave(Member member, LeaveRequest leaveRequest) {
+		if (leaveRequest == null) {
+			leaveRequest = new LeaveRequest();
+		}
+
+		member.setLeaveMember(leaveRequest.getLeaveReason());
+
+		try {
+			KeycloakHandler keycloakHandler = KeycloakHolder.get();
+			keycloakHandler.deleteUser(member.getId());
+		} catch (Exception e) {
+			log.error("LeaveMember Keycloak Error", e);
+		}
 	}
 
 }
