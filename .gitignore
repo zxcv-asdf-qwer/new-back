@@ -39,3 +39,4 @@ out/
 application-common.yml
 application.yml
 .github/workflows/gradle.yml
+*.json
