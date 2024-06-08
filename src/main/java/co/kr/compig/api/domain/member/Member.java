@@ -16,9 +16,11 @@ import co.kr.compig.global.code.UseYn;
 import co.kr.compig.global.code.UserType;
 import co.kr.compig.global.code.converter.DeptCodeConverter;
 import co.kr.compig.global.code.converter.UserTypeConverter;
+import co.kr.compig.global.embedded.CreatedAndUpdated;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -121,5 +123,11 @@ public class Member {
 	/* =================================================================
 	 * Relation method
 	   ================================================================= */
+	/* =================================================================
+	 * Default columns
+	   ================================================================= */
+	@Embedded
+	@Builder.Default
+	private CreatedAndUpdated createdAndModified = new CreatedAndUpdated();
 
 }
