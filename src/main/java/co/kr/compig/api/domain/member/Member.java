@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,8 @@ import org.keycloak.representations.idm.UserRepresentation;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import co.kr.compig.api.domain.permission.MenuPermission;
+import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
+import co.kr.compig.api.presentation.member.response.MemberResponse;
 import co.kr.compig.global.code.DeptCode;
 import co.kr.compig.global.code.GenderCode;
 import co.kr.compig.global.code.MemberRegisterType;
@@ -227,4 +230,43 @@ public class Member {
 		}
 	}
 
+	public MemberResponse toMemberResponse() {
+		MemberResponse memberResponse = MemberResponse.builder()
+			.memberId(this.id)
+			.userId(this.userId)
+			.userNm(this.userNm)
+			.telNo(this.telNo)
+			.email(this.email)
+			.gender(this.gender)
+			.useYn(this.useYn)
+			.userType(this.userType)
+			.deptCode(this.deptCode)
+			.memberRegisterType(this.memberRegisterType)
+			.address1(this.address1)
+			.address2(this.address2)
+			.introduce(this.introduce)
+			.marketingAppPush(this.marketingAppPushDate != null)
+			.build();
+
+		memberResponse.setGroups(
+			this.groups.stream().map(MemberGroup::converterDto).collect(Collectors.toSet()));
+		memberResponse.setCreatedAndUpdated(this.createdAndModified);
+		return memberResponse;
+	}
+
+	public AdminMemberResponse toAdminMemberResponse() {
+		AdminMemberResponse memberResponse = AdminMemberResponse.builder()
+			.memberId(this.id)
+			.userId(this.userId)
+			.userNm(this.userNm)
+			.telNo(this.telNo)
+			.email(this.email)
+			.deptCode(this.deptCode)
+			.build();
+
+		memberResponse.setGroups(
+			this.groups.stream().map(MemberGroup::converterDto).collect(Collectors.toSet()));
+		memberResponse.setCreatedAndUpdated(this.createdAndModified);
+		return memberResponse;
+	}
 }

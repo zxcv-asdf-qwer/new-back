@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.keycloak.representations.idm.GroupRepresentation;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +13,15 @@ import co.kr.compig.api.domain.member.Member;
 import co.kr.compig.api.domain.member.MemberGroup;
 import co.kr.compig.api.domain.member.MemberGroupRepository;
 import co.kr.compig.api.domain.member.MemberRepository;
+import co.kr.compig.api.domain.member.MemberRepositoryCustom;
 import co.kr.compig.api.presentation.member.request.AdminMemberCreate;
+import co.kr.compig.api.presentation.member.request.MemberSearchRequest;
+import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
 import co.kr.compig.global.code.UserType;
+import co.kr.compig.global.error.exception.BizException;
+import co.kr.compig.global.error.exception.NotExistDataException;
 import co.kr.compig.global.keycloak.KeycloakHandler;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MemberService {
 
 	private final MemberRepository memberRepository;
+	private final MemberRepositoryCustom memberRepositoryCustom;
 	private final MemberGroupRepository memberGroupRepository;
 	private final KeycloakHandler keycloakHandler;
 
@@ -64,8 +72,27 @@ public class MemberService {
 	}
 
 	@Transactional(readOnly = true)
+	public Page<AdminMemberResponse> getAdminPage(@Valid MemberSearchRequest memberSearchRequest) {
+		return memberRepositoryCustom.getAdminPage(memberSearchRequest);
+	}
+
+	@Transactional(readOnly = true)
+	public Member getMemberById(String memberId) {
+		return memberRepository.findById(memberId).orElseThrow(NotExistDataException::new);
+	}
+
+	@Transactional(readOnly = true)
 	public Member getMemberByIdSecurity(String memberId) {
 		return memberRepository.findById(memberId).orElse(null);
+	}
+
+	@Transactional(readOnly = true)
+	public AdminMemberResponse getMemberResponseByMemberId(String memberId) {
+		Member member = this.getMemberById(memberId);
+		if (!(member.getUserType() == UserType.SYS_ADMIN || member.getUserType() == UserType.SYS_USER)) {
+			throw new BizException("권한이 없습니다.");
+		}
+		return member.toAdminMemberResponse();
 	}
 
 }

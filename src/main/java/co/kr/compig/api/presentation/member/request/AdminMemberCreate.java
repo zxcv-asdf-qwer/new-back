@@ -36,6 +36,10 @@ public class AdminMemberCreate {
 	private String userId; // 사용자 아이디
 
 	@NotBlank
+	@Schema(description = "사용자 이메일", example = "email@email.com")
+	private String email; // 사용자 이메일
+
+	@NotBlank
 	@Schema(description = "사용자 비밀번호", example = "password")
 	private String userPw; // 사용자 비밀번호
 
@@ -50,6 +54,7 @@ public class AdminMemberCreate {
 	public Member convertEntity() {
 		return Member.builder()
 			.userNm(this.userNm)
+			.email(this.email)
 			.userId(this.userId)
 			.userPw(this.userPw)
 			.telNo(this.telNo)
