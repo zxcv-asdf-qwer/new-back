@@ -2,15 +2,20 @@ package co.kr.compig.api.application.member;
 
 import static co.kr.compig.api.domain.member.QMember.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import co.kr.compig.api.application.social.LoginServiceImpl;
@@ -20,11 +25,16 @@ import co.kr.compig.api.domain.member.MemberGroup;
 import co.kr.compig.api.domain.member.MemberGroupRepository;
 import co.kr.compig.api.domain.member.MemberRepository;
 import co.kr.compig.api.domain.member.MemberRepositoryCustom;
+import co.kr.compig.api.infra.auth.keycloak.KeycloakAuthApi;
+import co.kr.compig.api.infra.auth.keycloak.model.KeycloakAccessTokenRequest;
 import co.kr.compig.api.presentation.member.request.AdminMemberCreate;
 import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
 import co.kr.compig.api.presentation.member.request.LeaveRequest;
 import co.kr.compig.api.presentation.member.request.MemberSearchRequest;
 import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
+import co.kr.compig.api.presentation.social.request.SocialLoginRequest;
+import co.kr.compig.api.presentation.social.response.SocialLoginResponse;
+import co.kr.compig.api.presentation.social.response.SocialUserResponse;
 import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.UseYn;
 import co.kr.compig.global.code.UserType;
@@ -32,6 +42,8 @@ import co.kr.compig.global.error.exception.BizException;
 import co.kr.compig.global.error.exception.NotExistDataException;
 import co.kr.compig.global.keycloak.KeycloakHandler;
 import co.kr.compig.global.keycloak.KeycloakHolder;
+import co.kr.compig.global.keycloak.KeycloakProperties;
+import co.kr.compig.global.utils.GsonLocalDateTimeAdapter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +59,8 @@ public class MemberService {
 	private final MemberRepositoryCustom memberRepositoryCustom;
 	private final MemberGroupRepository memberGroupRepository;
 	private final KeycloakHandler keycloakHandler;
+	private final KeycloakAuthApi keycloakAuthApi;
+	private final KeycloakProperties keycloakProperties;
 	private final JPAQueryFactory jpaQueryFactory;
 
 	public String adminCreate(AdminMemberCreate adminMemberCreate) {
@@ -135,6 +149,37 @@ public class MemberService {
 			}
 		}
 		return new LoginServiceImpl();
+	}
+
+	public Object doSocialLogin(SocialLoginRequest socialLoginRequest) {
+		SocialLoginService loginService = this.getLoginService(socialLoginRequest.getMemberRegisterType());
+		SocialUserResponse socialUserResponse = loginService.appSocialUserResponse(socialLoginRequest);
+
+		Optional<Member> optionalMember = memberRepository.findByEmailAndUseYn(socialUserResponse.getEmail(), UseYn.Y);
+		if (optionalMember.isPresent()) {
+			Member member = optionalMember.get();
+			// 공통 로직 처리: 키클락 로그인 실행
+			return this.getKeycloakAccessToken(member.getEmail(), member.getEmail() + member.getInternalRandomKey());
+			// 키클락 로그인 실행
+		}
+		return socialUserResponse;
+	}
+
+	private SocialLoginResponse getKeycloakAccessToken(String userId, String userPw) {
+		ResponseEntity<?> response = keycloakAuthApi.getAccessToken(KeycloakAccessTokenRequest.builder()
+			.client_id(keycloakProperties.getClientId())
+			.client_secret(keycloakProperties.getClientSecret())
+			.username(userId)
+			.password(userPw)
+			.build());
+		log.info("keycloak user response");
+		log.info(response.toString());
+
+		Gson gson = new GsonBuilder().setPrettyPrinting()
+			.registerTypeAdapter(LocalDateTime.class, new GsonLocalDateTimeAdapter())
+			.create();
+
+		return gson.fromJson(Objects.requireNonNull(response.getBody()).toString(), SocialLoginResponse.class);
 	}
 
 	public void doUserLeave(String memberId) {

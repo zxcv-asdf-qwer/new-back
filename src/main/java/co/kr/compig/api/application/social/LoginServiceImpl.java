@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import co.kr.compig.api.presentation.social.request.SocialLoginRequest;
+import co.kr.compig.api.presentation.social.response.SocialUserResponse;
 import co.kr.compig.global.code.MemberRegisterType;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,6 +18,11 @@ public class LoginServiceImpl implements SocialLoginService {
 	@Override
 	public MemberRegisterType getServiceName() {
 		return MemberRegisterType.GENERAL;
+	}
+
+	@Override
+	public SocialUserResponse appSocialUserResponse(SocialLoginRequest socialLoginRequest) {
+		return null;
 	}
 
 }

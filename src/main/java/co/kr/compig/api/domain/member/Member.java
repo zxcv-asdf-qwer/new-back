@@ -124,6 +124,9 @@ public class Member {
 	@Column
 	private LocalDate leaveDate; // 회원 탈퇴 날짜
 
+	@Column
+	private String internalRandomKey; //내부적으로 사용되는 고유키값
+
 	/* =================================================================
 	 * Domain mapping
 	   ================================================================= */

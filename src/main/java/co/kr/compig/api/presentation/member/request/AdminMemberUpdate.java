@@ -4,6 +4,7 @@ import java.util.List;
 
 import co.kr.compig.global.code.DeptCode;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,5 +29,6 @@ public class AdminMemberUpdate {
 	@Schema(description = "관리자 DEVELOPER, OPERATION")
 	private DeptCode deptCode; //부서코드
 	@Schema(description = "현재 groupKeys")
+	@NotNull
 	private List<String> groupKeys;
 }
