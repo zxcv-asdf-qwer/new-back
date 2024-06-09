@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
+import co.kr.compig.api.application.social.LoginServiceImpl;
+import co.kr.compig.api.application.social.SocialLoginService;
 import co.kr.compig.api.domain.member.Member;
 import co.kr.compig.api.domain.member.MemberGroup;
 import co.kr.compig.api.domain.member.MemberGroupRepository;
@@ -23,6 +25,7 @@ import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
 import co.kr.compig.api.presentation.member.request.LeaveRequest;
 import co.kr.compig.api.presentation.member.request.MemberSearchRequest;
 import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
+import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.UseYn;
 import co.kr.compig.global.code.UserType;
 import co.kr.compig.global.error.exception.BizException;
@@ -39,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class MemberService {
 
+	private final List<SocialLoginService> loginServices;
 	private final MemberRepository memberRepository;
 	private final MemberRepositoryCustom memberRepositoryCustom;
 	private final MemberGroupRepository memberGroupRepository;
@@ -121,6 +125,16 @@ public class MemberService {
 		memberById.updateUserKeyCloak();
 		memberById.passwordEncode();
 		return memberById.getId();
+	}
+
+	public SocialLoginService getLoginService(MemberRegisterType memberRegisterType) {
+		for (SocialLoginService loginService : loginServices) {
+			if (memberRegisterType.equals(loginService.getServiceName())) {
+				log.info("login service name: {}", loginService.getServiceName());
+				return loginService;
+			}
+		}
+		return new LoginServiceImpl();
 	}
 
 	public void doUserLeave(String memberId) {
