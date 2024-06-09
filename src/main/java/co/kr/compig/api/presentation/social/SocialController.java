@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.kr.compig.api.application.member.MemberService;
+import co.kr.compig.api.presentation.social.request.SocialCreateRequest;
 import co.kr.compig.api.presentation.social.request.SocialLoginRequest;
 import co.kr.compig.global.dto.Response;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,4 +30,11 @@ public class SocialController {
 			.build());
 	}
 
+	@Operation(summary = "소셜 회원가입")
+	@PostMapping
+	public ResponseEntity<Response<?>> doSocialLogin(@RequestBody SocialCreateRequest socialCreateRequest) {
+		return ResponseEntity.ok().body(Response.builder()
+			.data(memberService.doSocialCreate(socialCreateRequest))
+			.build());
+	}
 }

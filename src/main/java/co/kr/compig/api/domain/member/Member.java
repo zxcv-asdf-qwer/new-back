@@ -4,8 +4,10 @@ import static co.kr.compig.global.utils.KeyGen.*;
 import static co.kr.compig.global.utils.PasswordValidation.*;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,10 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(
-	uniqueConstraints = {
-		@UniqueConstraint(name = "uk01_member", columnNames = {"userId"}),
-	})
+@Table(uniqueConstraints = {@UniqueConstraint(name = "uk01_member", columnNames = {"userId"}),})
 public class Member {
 
 	@Id
@@ -131,8 +130,7 @@ public class Member {
 	 * Domain mapping
 	   ================================================================= */
 	@Builder.Default
-	@OneToMany(
-		mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference //연관관계 주인 반대 Entity 에 선언, 정상적으로 직렬화 수행
 	private Set<MemberGroup> groups = new HashSet<>();
 
@@ -175,11 +173,10 @@ public class Member {
 	/**
 	 * Keycloak 사용자 생성
 	 */
-	public void createUserKeyCloak(String providerId, String providerUsername)
-		throws KeyCloakRequestException {
+	public void createUserKeyCloak(String providerId, String providerUsername) throws KeyCloakRequestException {
 		KeycloakHandler keycloakHandler = KeycloakHolder.get();
-		UserRepresentation userRepresentation =
-			keycloakHandler.createUser(this.getUserRepresentation(providerId, providerUsername));
+		UserRepresentation userRepresentation = keycloakHandler.createUser(
+			this.getUserRepresentation(providerId, providerUsername));
 		this.id = userRepresentation.getId();
 		if (isExistGroups()) {
 			keycloakHandler.usersJoinGroups(this.id, this.getGroups());
@@ -191,22 +188,23 @@ public class Member {
 	 */
 	public UserRepresentation getUserRepresentation(String providerId, String providerUsername) {
 		UserRepresentation userRepresentation = new UserRepresentation();
-		String userNm = this.userNm;
-		if (userNm != null) {
-			String[] userNmSplit = userNm.split(" ");
-			String firstName = userNmSplit[0];
-			String lastName = userNmSplit.length > 1 ? userNmSplit[1] : userNmSplit[0];
-			userRepresentation.setFirstName(firstName);
-			userRepresentation.setLastName(lastName);
-		}
+		//닉네임으로 변경
+		// String userNm = this.userNm;
+		// if (userNm != null) {
+		// 	String[] userNmSplit = userNm.split(" ");
+		// 	String firstName = userNmSplit[0];
+		// 	String lastName = userNmSplit.length > 1 ? userNmSplit[1] : userNmSplit[0];
+		// 	userRepresentation.setFirstName(firstName);
+		// 	userRepresentation.setLastName(lastName);
+		// }
+		userRepresentation.setAttributes(Map.of("nicName", Collections.singletonList(this.userNm)));
 
 		userRepresentation.setId(this.id);
 		userRepresentation.setUsername(Optional.ofNullable(this.userId).orElseGet(() -> this.email));
 		userRepresentation.setEmail(this.email);
 		userRepresentation.setEnabled(true);
 
-		if (!MemberRegisterType.GENERAL.equals(this.memberRegisterType) && StringUtils.isNotBlank(
-			providerUsername)) {
+		if (!MemberRegisterType.GENERAL.equals(this.memberRegisterType) && StringUtils.isNotBlank(providerUsername)) {
 			String socialProvider = this.memberRegisterType.getCode().toLowerCase();
 
 			FederatedIdentityRepresentation federatedIdentityRepresentation = new FederatedIdentityRepresentation();
@@ -263,8 +261,7 @@ public class Member {
 			.marketingAppPush(this.marketingAppPushDate != null)
 			.build();
 
-		memberResponse.setGroups(
-			this.groups.stream().map(MemberGroup::converterDto).collect(Collectors.toSet()));
+		memberResponse.setGroups(this.groups.stream().map(MemberGroup::converterDto).collect(Collectors.toSet()));
 		memberResponse.setCreatedAndUpdated(this.createdAndModified);
 		return memberResponse;
 	}
@@ -279,8 +276,7 @@ public class Member {
 			.deptCode(this.deptCode)
 			.build();
 
-		memberResponse.setGroups(
-			this.groups.stream().map(MemberGroup::converterDto).collect(Collectors.toSet()));
+		memberResponse.setGroups(this.groups.stream().map(MemberGroup::converterDto).collect(Collectors.toSet()));
 		memberResponse.setCreatedAndUpdated(this.createdAndModified);
 		return memberResponse;
 	}
@@ -312,19 +308,18 @@ public class Member {
 			this.deptCode = adminMemberUpdate.getDeptCode();
 		}
 
-		this.removeAllGroups(
-			this.groups.stream()
-				.filter(
-					memberGroup ->
-						adminMemberUpdate.getGroupKeys().stream()
-							.filter(memberGroup::equalsGroupKey)
-							.findAny()
-							.isEmpty())
-				.collect(Collectors.toSet()));
+		this.removeAllGroups(this.groups.stream()
+			.filter(memberGroup -> adminMemberUpdate.getGroupKeys()
+				.stream()
+				.filter(memberGroup::equalsGroupKey)
+				.findAny()
+				.isEmpty())
+			.collect(Collectors.toSet()));
 
 		for (String groupKey : adminMemberUpdate.getGroupKeys()) {
-			Optional<MemberGroup> optional =
-				this.groups.stream().filter(g -> g.getGroupKey().equals(groupKey)).findFirst();
+			Optional<MemberGroup> optional = this.groups.stream()
+				.filter(g -> g.getGroupKey().equals(groupKey))
+				.findFirst();
 
 			if (optional.isEmpty()) {
 				this.addGroups(MemberGroup.builder().groupKey(groupKey).build());

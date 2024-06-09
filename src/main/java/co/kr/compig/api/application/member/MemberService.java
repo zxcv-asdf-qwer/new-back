@@ -32,6 +32,7 @@ import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
 import co.kr.compig.api.presentation.member.request.LeaveRequest;
 import co.kr.compig.api.presentation.member.request.MemberSearchRequest;
 import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
+import co.kr.compig.api.presentation.social.request.SocialCreateRequest;
 import co.kr.compig.api.presentation.social.request.SocialLoginRequest;
 import co.kr.compig.api.presentation.social.response.SocialLoginResponse;
 import co.kr.compig.api.presentation.social.response.SocialUserResponse;
@@ -169,6 +170,28 @@ public class MemberService {
 			// 키클락 로그인 실행
 		}
 		return socialUserResponse;
+	}
+
+	public SocialLoginResponse doSocialCreate(SocialCreateRequest socialCreateRequest) {
+		Optional<Member> optionalMember = memberRepository.findByEmailAndUseYn(socialCreateRequest.getEmail(), UseYn.Y);
+		if (optionalMember.isPresent()) {
+			throw new BizException("이미 가입된 회원 입니다.");
+		}
+		Member member = optionalMember.orElseGet(() -> {
+			// 중복되지 않는 경우 새 회원 생성 후 반환
+			Member newMember = socialCreateRequest.converterEntity();
+			this.setReferenceDomain(socialCreateRequest.getUserType(), newMember);
+			newMember.createUserKeyCloak(socialCreateRequest.getSocialId(), socialCreateRequest.getUserNm());
+			newMember.passwordEncode();
+
+			String newMemberId = memberRepository.save(newMember).getId();
+
+			return memberRepository.findById(newMemberId).orElseThrow(() -> new RuntimeException("회원 생성 후 조회 실패"));
+		});
+		// 공통 로직 처리: 키클락 로그인 실행
+		return this.getKeycloakAccessToken(member.getEmail(),
+			member.getEmail() + member.getInternalRandomKey());
+		// 키클락 로그인 실행
 	}
 
 	private SocialLoginResponse getKeycloakAccessToken(String userId, String userPw) {
