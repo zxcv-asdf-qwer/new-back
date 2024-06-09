@@ -36,6 +36,7 @@ import co.kr.compig.api.presentation.social.request.SocialLoginRequest;
 import co.kr.compig.api.presentation.social.response.SocialLoginResponse;
 import co.kr.compig.api.presentation.social.response.SocialUserResponse;
 import co.kr.compig.global.code.MemberRegisterType;
+import co.kr.compig.global.code.OauthType;
 import co.kr.compig.global.code.UseYn;
 import co.kr.compig.global.code.UserType;
 import co.kr.compig.global.error.exception.BizException;
@@ -153,7 +154,12 @@ public class MemberService {
 
 	public Object doSocialLogin(SocialLoginRequest socialLoginRequest) {
 		SocialLoginService loginService = this.getLoginService(socialLoginRequest.getMemberRegisterType());
-		SocialUserResponse socialUserResponse = loginService.appSocialUserResponse(socialLoginRequest);
+		SocialUserResponse socialUserResponse;
+		if (socialLoginRequest.getOauthType() != OauthType.AUTH_CODE) {
+			socialUserResponse = loginService.tokeSocialUserResponse(socialLoginRequest);
+		} else {
+			socialUserResponse = loginService.codeSocialUserResponse(socialLoginRequest);
+		}
 
 		Optional<Member> optionalMember = memberRepository.findByEmailAndUseYn(socialUserResponse.getEmail(), UseYn.Y);
 		if (optionalMember.isPresent()) {

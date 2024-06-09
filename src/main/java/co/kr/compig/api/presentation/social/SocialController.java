@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import co.kr.compig.api.application.member.MemberService;
 import co.kr.compig.api.presentation.social.request.SocialLoginRequest;
+import co.kr.compig.global.dto.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +23,10 @@ public class SocialController {
 
 	@Operation(summary = "소셜 로그인")
 	@PostMapping(path = "/login")
-	public ResponseEntity<?> doSocialLogin(@RequestBody SocialLoginRequest socialLoginRequest) {
-		return ResponseEntity.ok()
-			.body(memberService.doSocialLogin(socialLoginRequest));
+	public ResponseEntity<Response<?>> doSocialLogin(@RequestBody SocialLoginRequest socialLoginRequest) {
+		return ResponseEntity.ok().body(Response.builder()
+			.data(memberService.doSocialLogin(socialLoginRequest))
+			.build());
 	}
 
 }
