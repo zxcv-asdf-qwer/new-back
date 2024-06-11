@@ -22,4 +22,5 @@ public class CustomOauth2User implements Serializable {
 	private String username;
 	private String email;
 	private boolean userYn;
+	private String keycloakClientId;
 }

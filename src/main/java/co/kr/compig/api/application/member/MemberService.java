@@ -1,6 +1,7 @@
 package co.kr.compig.api.application.member;
 
 import static co.kr.compig.api.domain.member.QMember.*;
+import static co.kr.compig.global.utils.SecurityUtil.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +28,7 @@ import co.kr.compig.api.domain.member.MemberRepository;
 import co.kr.compig.api.domain.member.MemberRepositoryCustom;
 import co.kr.compig.api.infra.auth.keycloak.KeycloakAuthApi;
 import co.kr.compig.api.infra.auth.keycloak.model.KeycloakAccessTokenRequest;
+import co.kr.compig.api.infra.auth.keycloak.model.LogoutRequest;
 import co.kr.compig.api.presentation.member.request.AdminMemberCreate;
 import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
 import co.kr.compig.api.presentation.member.request.LeaveRequest;
@@ -231,4 +233,10 @@ public class MemberService {
 		}
 	}
 
+	public void logout(String refreshToken) {
+		keycloakAuthApi.logout(LogoutRequest.builder()
+			.client_id(getCustomOauth2User().getKeycloakClientId())
+			.refresh_token(refreshToken)
+			.build());
+	}
 }
