@@ -55,7 +55,7 @@ public class GoogleLoginServiceImpl implements SocialLoginService {
 	}
 
 	@Override //token
-	public SocialUserResponse tokeSocialUserResponse(SocialLoginRequest socialLoginRequest) {
+	public SocialUserResponse tokenSocialUserResponse(SocialLoginRequest socialLoginRequest) {
 		log.info(getServiceName().getCode() + " appSocialUserResponse");
 		try {
 			ResponseEntity<?> response = googleAuthApi.accessTokenToTokenInfo(

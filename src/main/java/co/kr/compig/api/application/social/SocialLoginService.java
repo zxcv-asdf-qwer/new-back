@@ -12,7 +12,7 @@ public interface SocialLoginService {
 	MemberRegisterType getServiceName();
 
 	//token to userInfo
-	SocialUserResponse tokeSocialUserResponse(SocialLoginRequest socialLoginRequest);
+	SocialUserResponse tokenSocialUserResponse(SocialLoginRequest socialLoginRequest);
 
 	SocialUserResponse codeSocialUserResponse(SocialLoginRequest socialLoginRequest);
 }

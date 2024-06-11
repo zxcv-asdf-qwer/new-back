@@ -21,7 +21,7 @@ public class LoginServiceImpl implements SocialLoginService {
 	}
 
 	@Override
-	public SocialUserResponse tokeSocialUserResponse(SocialLoginRequest socialLoginRequest) {
+	public SocialUserResponse tokenSocialUserResponse(SocialLoginRequest socialLoginRequest) {
 		return null;
 	}
 

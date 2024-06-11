@@ -157,7 +157,7 @@ public class MemberService {
 		SocialLoginService loginService = this.getLoginService(socialLoginRequest.getMemberRegisterType());
 		SocialUserResponse socialUserResponse;
 		if (socialLoginRequest.getOauthType() != OauthType.AUTH_CODE) {
-			socialUserResponse = loginService.tokeSocialUserResponse(socialLoginRequest);
+			socialUserResponse = loginService.tokenSocialUserResponse(socialLoginRequest);
 		} else {
 			socialUserResponse = loginService.codeSocialUserResponse(socialLoginRequest);
 		}
