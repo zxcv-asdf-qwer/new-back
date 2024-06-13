@@ -8,14 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.kr.compig.api.application.member.MemberService;
-import co.kr.compig.api.presentation.member.request.AdminMemberCreate;
 import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
 import co.kr.compig.api.presentation.member.request.MemberSearchRequest;
 import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
@@ -37,15 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminMemberController {
 
 	private final MemberService memberService;
-
-	@Operation(summary = "관리자 일반 회원가입")
-	@PostMapping
-	public ResponseEntity<Response<?>> adminCreate(
-		@RequestBody @Valid AdminMemberCreate adminMemberCreate) {
-		return ResponseEntity.ok().body(Response.<Map<String, String>>builder()
-			.data(Map.of("memberId", memberService.adminCreate(adminMemberCreate)))
-			.build());
-	}
 
 	@Operation(summary = "관리자 리스트", description = "페이징")
 	@GetMapping

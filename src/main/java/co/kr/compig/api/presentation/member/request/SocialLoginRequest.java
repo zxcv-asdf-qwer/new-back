@@ -1,24 +1,21 @@
-package co.kr.compig.api.presentation.social.response;
+package co.kr.compig.api.presentation.member.request;
 
 import co.kr.compig.global.code.MemberRegisterType;
+import co.kr.compig.global.code.OauthType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@ToString
-public class SocialUserResponse {
+public class SocialLoginRequest {
 
+	private String code;
+	private String token;
 	private MemberRegisterType memberRegisterType;
-	private String socialId;//social userId
-	private String email;
-	private String name;
-	private String gender;
-	private String birthday;
+	private OauthType oauthType;
 
 }

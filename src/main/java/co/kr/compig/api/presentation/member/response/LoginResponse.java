@@ -1,4 +1,4 @@
-package co.kr.compig.api.presentation.social.response;
+package co.kr.compig.api.presentation.member.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class SocialLoginResponse {
+public class LoginResponse {
 
 	// private String email;
 	// private List<String> roles;

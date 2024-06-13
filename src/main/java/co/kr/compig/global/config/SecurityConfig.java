@@ -85,7 +85,6 @@ public class SecurityConfig {
 			.requestMatchers(
 				antMatcher("/pb/**"),
 				antMatcher("/actuator/**"),
-				antMatcher("/docs/**"),
 				antMatcher("/favicon.ico")
 			)
 			.permitAll()

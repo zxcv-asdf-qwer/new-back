@@ -58,7 +58,6 @@ public class CustomJwtAuthenticationConverter implements
 			user.setUsername(jwt.getClaim("name"));
 			user.setEmail(jwt.getClaim("email"));
 			user.setUserYn(true);
-			user.setKeycloakClientId(jwt.getClaim("azp"));
 		}
 
 		return user;

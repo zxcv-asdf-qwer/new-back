@@ -23,6 +23,13 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 	private final MemberService memberService;
 
+	@Operation(summary = "내정보 가져오기", description = "내정보 가져오기")
+	@GetMapping
+	public ResponseEntity<?> findMe() {
+		memberService.getMyInfo();
+		return ResponseEntity.ok(memberService.getMyInfo());
+	}
+
 	@Operation(summary = "로그아웃", description = "로그아웃")
 	@GetMapping("/logout")
 	public ResponseEntity<?> getAdminPage(

@@ -32,12 +32,14 @@ import co.kr.compig.api.infra.auth.keycloak.model.LogoutRequest;
 import co.kr.compig.api.presentation.member.request.AdminMemberCreate;
 import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
 import co.kr.compig.api.presentation.member.request.LeaveRequest;
+import co.kr.compig.api.presentation.member.request.LoginRequest;
 import co.kr.compig.api.presentation.member.request.MemberSearchRequest;
+import co.kr.compig.api.presentation.member.request.SocialCreateRequest;
+import co.kr.compig.api.presentation.member.request.SocialLoginRequest;
 import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
-import co.kr.compig.api.presentation.social.request.SocialCreateRequest;
-import co.kr.compig.api.presentation.social.request.SocialLoginRequest;
-import co.kr.compig.api.presentation.social.response.SocialLoginResponse;
-import co.kr.compig.api.presentation.social.response.SocialUserResponse;
+import co.kr.compig.api.presentation.member.response.LoginResponse;
+import co.kr.compig.api.presentation.member.response.MemberResponse;
+import co.kr.compig.api.presentation.member.response.SocialUserResponse;
 import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.OauthType;
 import co.kr.compig.global.code.UseYn;
@@ -174,7 +176,18 @@ public class MemberService {
 		return socialUserResponse;
 	}
 
-	public SocialLoginResponse doSocialCreate(SocialCreateRequest socialCreateRequest) {
+	public LoginResponse doLogin(LoginRequest loginRequest) {
+		Optional<Member> optionalMember = memberRepository.findByUserIdAndUseYn(loginRequest.getUserId(), UseYn.Y);
+		if (optionalMember.isPresent()) {
+			Member member = optionalMember.get();
+			// 공통 로직 처리: 키클락 로그인 실행
+			return this.getKeycloakAccessToken(member.getEmail(), member.getEmail() + member.getInternalRandomKey());
+			// 키클락 로그인 실행
+		}
+		throw new BizException("회원가입이 필요합니다.");
+	}
+
+	public LoginResponse doSocialCreate(SocialCreateRequest socialCreateRequest) {
 		Optional<Member> optionalMember = memberRepository.findByEmailAndUseYn(socialCreateRequest.getEmail(), UseYn.Y);
 		if (optionalMember.isPresent()) {
 			throw new BizException("이미 가입된 회원 입니다.");
@@ -196,7 +209,7 @@ public class MemberService {
 		// 키클락 로그인 실행
 	}
 
-	private SocialLoginResponse getKeycloakAccessToken(String userId, String userPw) {
+	private LoginResponse getKeycloakAccessToken(String userId, String userPw) {
 		ResponseEntity<?> response = keycloakAuthApi.getAccessToken(KeycloakAccessTokenRequest.builder()
 			.client_id(keycloakProperties.getClientId())
 			.client_secret(keycloakProperties.getClientSecret())
@@ -210,7 +223,7 @@ public class MemberService {
 			.registerTypeAdapter(LocalDateTime.class, new GsonLocalDateTimeAdapter())
 			.create();
 
-		return gson.fromJson(Objects.requireNonNull(response.getBody()).toString(), SocialLoginResponse.class);
+		return gson.fromJson(Objects.requireNonNull(response.getBody()).toString(), LoginResponse.class);
 	}
 
 	public void doUserLeave(String memberId) {
@@ -235,8 +248,14 @@ public class MemberService {
 
 	public void logout(String refreshToken) {
 		keycloakAuthApi.logout(LogoutRequest.builder()
-			.client_id(getCustomOauth2User().getKeycloakClientId())
+			.client_id(keycloakProperties.getClientId())
+			.client_secret(keycloakProperties.getClientSecret())
 			.refresh_token(refreshToken)
 			.build());
+	}
+
+	public MemberResponse getMyInfo() {
+		Member memberById = this.getMemberById(getMemberId());
+		return memberById.toMemberResponse();
 	}
 }

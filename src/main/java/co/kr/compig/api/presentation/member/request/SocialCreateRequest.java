@@ -1,4 +1,4 @@
-package co.kr.compig.api.presentation.social.request;
+package co.kr.compig.api.presentation.member.request;
 
 import static co.kr.compig.global.utils.KeyGen.*;
 
