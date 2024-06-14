@@ -30,4 +30,7 @@ public interface GoogleAuthApi {
 		@RequestParam("code") String code
 	);
 
+	@PostMapping("/revoke")
+	ResponseEntity<String> revokeAccessToken(@RequestParam("token") String token);
+
 }

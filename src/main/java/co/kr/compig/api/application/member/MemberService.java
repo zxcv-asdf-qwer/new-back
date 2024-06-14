@@ -33,12 +33,14 @@ import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
 import co.kr.compig.api.presentation.member.request.LeaveRequest;
 import co.kr.compig.api.presentation.member.request.LoginRequest;
 import co.kr.compig.api.presentation.member.request.MemberSearchRequest;
+import co.kr.compig.api.presentation.member.request.MemberUpdateRequest;
 import co.kr.compig.api.presentation.member.request.SocialCreateRequest;
 import co.kr.compig.api.presentation.member.request.SocialLoginRequest;
 import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
 import co.kr.compig.api.presentation.member.response.LoginResponse;
 import co.kr.compig.api.presentation.member.response.MemberResponse;
 import co.kr.compig.api.presentation.member.response.SocialUserResponse;
+import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.OauthType;
 import co.kr.compig.global.code.UseYn;
 import co.kr.compig.global.code.UserType;
@@ -49,6 +51,7 @@ import co.kr.compig.global.keycloak.KeycloakHolder;
 import co.kr.compig.global.keycloak.KeycloakProperties;
 import co.kr.compig.global.utils.ApplicationContextUtil;
 import co.kr.compig.global.utils.GsonLocalDateTimeAdapter;
+import co.kr.compig.global.utils.SecurityUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -218,16 +221,19 @@ public class MemberService {
 		return gson.fromJson(Objects.requireNonNull(response.getBody()).toString(), LoginResponse.class);
 	}
 
-	public void doUserLeave(String memberId) {
+	public void doUserLeave(String memberId, LeaveRequest leaveRequest) {
 		Member member = getAbleMemberById(memberId);
-		doUserLeave(member, null);
-	}
-
-	public void doUserLeave(Member member, LeaveRequest leaveRequest) {
 		if (leaveRequest == null) {
 			leaveRequest = new LeaveRequest();
 		}
-
+		if (member.getMemberRegisterType() != MemberRegisterType.GENERAL) {
+			SocialLoginService loginService = ApplicationContextUtil.getBean(
+					member.getMemberRegisterType().getServiceName(), SocialLoginService.class)
+				.orElseThrow(
+					() -> new BizException(String.format("### 로그인 서비스 [%s] 없음###",
+						member.getMemberRegisterType().getServiceName())));
+			loginService.revoke(leaveRequest);
+		}
 		member.setLeaveMember(leaveRequest.getLeaveReason());
 
 		try {
@@ -249,5 +255,12 @@ public class MemberService {
 	public MemberResponse getMyInfo() {
 		Member memberById = this.getMemberById(getMemberId());
 		return memberById.toMemberResponse();
+	}
+
+	public void updateMember(MemberUpdateRequest memberUpdateRequest) {
+		Member memberById = this.getMemberById(SecurityUtil.getMemberId());
+		setReferenceDomain(memberUpdateRequest.getUserType(), memberById);
+		memberById.updateUserKeyCloak();
+		memberById.update(memberUpdateRequest);
 	}
 }

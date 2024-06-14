@@ -13,4 +13,5 @@ public class LeaveRequest {
 
 	private String leaveReason; //탈퇴사유
 	private String code;
+	private String token;
 }

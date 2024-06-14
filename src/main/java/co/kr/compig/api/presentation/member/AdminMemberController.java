@@ -63,7 +63,7 @@ public class AdminMemberController {
 	@Operation(summary = "관리자 탈퇴")
 	@PutMapping("/{memberId}/leave")
 	public ResponseEntity<Response<?>> updateAdminById(@PathVariable String memberId) {
-		memberService.doUserLeave(memberId);
+		memberService.doUserLeave(memberId, null);
 		return ResponseEntity.ok().build();
 	}
 

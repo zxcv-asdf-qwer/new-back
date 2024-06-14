@@ -20,6 +20,7 @@ import com.google.gson.GsonBuilder;
 import co.kr.compig.api.infra.auth.social.google.GoogleAuthApi;
 import co.kr.compig.api.infra.auth.social.google.model.GoogleLoginResponse;
 import co.kr.compig.api.infra.auth.social.google.model.GoogleProperties;
+import co.kr.compig.api.presentation.member.request.LeaveRequest;
 import co.kr.compig.api.presentation.member.request.SocialLoginRequest;
 import co.kr.compig.api.presentation.member.response.SocialAuthResponse;
 import co.kr.compig.api.presentation.member.response.SocialUserResponse;
@@ -82,7 +83,7 @@ public class GoogleLoginServiceImpl implements SocialLoginService {
 
 	@Override //code
 	public SocialUserResponse codeSocialUserResponse(SocialLoginRequest socialLoginRequest) {
-		log.info(MemberRegisterType.NAVER + " codeSocialUserResponse");
+		log.info(MemberRegisterType.GOOGLE + " codeSocialUserResponse");
 		SocialAuthResponse tokens = this.getTokens(socialLoginRequest.getCode());
 		return this.idTokenToUserInfo(tokens.getId_token());
 	}
@@ -150,5 +151,25 @@ public class GoogleLoginServiceImpl implements SocialLoginService {
 				e.getStatusCode(), e.getMessage());
 		}
 		return null;
+	}
+
+	@Override
+	public void revoke(LeaveRequest leaveRequest) {
+		log.info(MemberRegisterType.GOOGLE + " revoke");
+
+		try {
+			if (leaveRequest.getToken() != null) {
+				googleAuthApi.revokeAccessToken(leaveRequest.getToken());
+			} else {
+				SocialAuthResponse tokens = this.getTokens(leaveRequest.getCode());
+				googleAuthApi.revokeAccessToken(tokens.getAccess_token());
+			}
+		} catch (HttpServerErrorException e) {
+			log.error("Google revoke HttpServerErrorException - Status : {}, Message : {}",
+				e.getStatusCode(), e.getMessage());
+		} catch (UnknownHttpStatusCodeException e) {
+			log.error("Google revoke UnknownHttpStatusCodeException - Status : {}, Message : {}",
+				e.getStatusCode(), e.getMessage());
+		}
 	}
 }

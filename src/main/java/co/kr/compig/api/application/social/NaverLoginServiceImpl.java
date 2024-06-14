@@ -14,6 +14,7 @@ import co.kr.compig.api.infra.auth.social.naver.NaverAuthApi;
 import co.kr.compig.api.infra.auth.social.naver.NaverUserApi;
 import co.kr.compig.api.infra.auth.social.naver.model.NaverLoginResponse;
 import co.kr.compig.api.infra.auth.social.naver.model.NaverProperties;
+import co.kr.compig.api.presentation.member.request.LeaveRequest;
 import co.kr.compig.api.presentation.member.request.SocialLoginRequest;
 import co.kr.compig.api.presentation.member.response.SocialAuthResponse;
 import co.kr.compig.api.presentation.member.response.SocialUserResponse;
@@ -113,4 +114,39 @@ public class NaverLoginServiceImpl implements SocialLoginService {
 		}
 		return null;
 	}
+
+	@Override
+	public void revoke(LeaveRequest leaveRequest) {
+		log.info(MemberRegisterType.NAVER + " revoke");
+		try {
+			if (leaveRequest.getToken() != null) {
+				naverAuthApi.revokeAccessToken(
+					naverProperties.getClientId(),
+					naverProperties.getClientSecret(),
+					"delete",
+					leaveRequest.getToken(),
+					MemberRegisterType.NAVER.getCode()
+				);
+			} else {
+				SocialAuthResponse socialAuthResponse = this.getAccessToken(leaveRequest.getCode());
+				naverAuthApi.revokeAccessToken(
+					naverProperties.getClientId(),
+					naverProperties.getClientSecret(),
+					"delete",
+					socialAuthResponse.getAccess_token(),
+					MemberRegisterType.NAVER.getCode()
+				);
+			}
+
+		} catch (HttpServerErrorException e) {
+			log.error("Naver revoke HttpServerErrorException - Status : {}, Message : {}",
+				e.getStatusCode(),
+				e.getMessage());
+		} catch (UnknownHttpStatusCodeException e) {
+			log.error("Naver revoke UnknownHttpStatusCodeException - Status : {}, Message : {}",
+				e.getStatusCode(),
+				e.getMessage());
+		}
+	}
+
 }

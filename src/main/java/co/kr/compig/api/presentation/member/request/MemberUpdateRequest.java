@@ -5,7 +5,6 @@ import java.util.List;
 import org.hibernate.validator.constraints.Length;
 
 import co.kr.compig.global.code.GenderCode;
-import co.kr.compig.global.code.UseYn;
 import co.kr.compig.global.code.UserType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -30,8 +29,6 @@ public class MemberUpdateRequest {
 
 	@NotNull
 	private GenderCode gender; // 성별
-	@NotNull
-	private UseYn useYn; // 사용유무
 	@NotNull
 	private UserType userType; //사용자 타입
 	@NotBlank

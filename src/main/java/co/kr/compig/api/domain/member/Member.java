@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import co.kr.compig.api.domain.permission.MenuPermission;
 import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
+import co.kr.compig.api.presentation.member.request.MemberUpdateRequest;
 import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
 import co.kr.compig.api.presentation.member.response.MemberResponse;
 import co.kr.compig.global.code.DeptCode;
@@ -336,5 +337,38 @@ public class Member {
 		}
 		this.leaveDate = LocalDate.now();
 		this.useYn = UseYn.N;
+	}
+
+	public void update(MemberUpdateRequest memberUpdateRequest) {
+		this.userNm = memberUpdateRequest.getUserNm();
+		this.telNo = memberUpdateRequest.getTelNo();
+		this.gender = memberUpdateRequest.getGender();
+		this.userType = memberUpdateRequest.getUserType();
+		this.address1 = memberUpdateRequest.getAddress1();
+		this.address2 = memberUpdateRequest.getAddress2();
+		this.introduce = memberUpdateRequest.getIntroduce();
+		this.marketingAppPushDate = marketingDate(memberUpdateRequest.isMarketingAppPush());
+		this.removeAllGroups(
+			this.groups.stream()
+				.filter(
+					memberGroup ->
+						memberUpdateRequest.getGroupKeys().stream()
+							.filter(memberGroup::equalsGroupKey)
+							.findAny()
+							.isEmpty())
+				.collect(Collectors.toSet()));
+
+		for (String groupKey : memberUpdateRequest.getGroupKeys()) {
+			Optional<MemberGroup> optional =
+				this.groups.stream().filter(g -> g.getGroupKey().equals(groupKey)).findFirst();
+
+			if (optional.isEmpty()) {
+				this.addGroups(MemberGroup.builder().groupKey(groupKey).build());
+			}
+		}
+	}
+
+	public LocalDate marketingDate(boolean isMarketing) {
+		return isMarketing ? LocalDate.now() : null;
 	}
 }
