@@ -2,7 +2,6 @@ package co.kr.compig.api.application.social;
 
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
@@ -26,28 +25,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Qualifier("naverLogin")
 public class NaverLoginServiceImpl implements SocialLoginService {
 
 	private final NaverUserApi naverUserApi;
 	private final NaverAuthApi naverAuthApi;
 	private final NaverProperties naverProperties;
 
-	@Override
-	public MemberRegisterType getServiceName() {
-		return MemberRegisterType.NAVER;
-	}
-
 	@Override //accessToken
 	public SocialUserResponse tokenSocialUserResponse(SocialLoginRequest socialLoginRequest) {
-		log.info(getServiceName().getCode() + " appSocialUserResponse");
+		log.info(MemberRegisterType.NAVER + " tokenSocialUserResponse");
 		return this.accessTokenToUserInfo(socialLoginRequest.getToken());
 
 	}
 
 	@Override //code, state
 	public SocialUserResponse codeSocialUserResponse(SocialLoginRequest socialLoginRequest) {
-		log.info(getServiceName().getCode() + " webSocialUserResponse");
+		log.info(MemberRegisterType.NAVER + " codeSocialUserResponse");
 		SocialAuthResponse socialAuthResponse = this.getAccessToken(socialLoginRequest.getCode());
 		return this.accessTokenToUserInfo(socialAuthResponse.getAccess_token());
 	}
@@ -71,7 +64,7 @@ public class NaverLoginServiceImpl implements SocialLoginService {
 
 			return SocialUserResponse.builder()
 				.socialId(naverLoginResponse.getResponse().getId())
-				.memberRegisterType(getServiceName())
+				.memberRegisterType(MemberRegisterType.NAVER)
 				.email(naverLoginResponse.getResponse().getEmail())
 				.name(naverLoginResponse.getResponse().getName())
 				.build();

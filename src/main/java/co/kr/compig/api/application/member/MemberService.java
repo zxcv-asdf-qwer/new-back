@@ -19,7 +19,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import co.kr.compig.api.application.social.LoginServiceImpl;
 import co.kr.compig.api.application.social.SocialLoginService;
 import co.kr.compig.api.domain.member.Member;
 import co.kr.compig.api.domain.member.MemberGroup;
@@ -40,7 +39,6 @@ import co.kr.compig.api.presentation.member.response.AdminMemberResponse;
 import co.kr.compig.api.presentation.member.response.LoginResponse;
 import co.kr.compig.api.presentation.member.response.MemberResponse;
 import co.kr.compig.api.presentation.member.response.SocialUserResponse;
-import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.OauthType;
 import co.kr.compig.global.code.UseYn;
 import co.kr.compig.global.code.UserType;
@@ -49,6 +47,7 @@ import co.kr.compig.global.error.exception.NotExistDataException;
 import co.kr.compig.global.keycloak.KeycloakHandler;
 import co.kr.compig.global.keycloak.KeycloakHolder;
 import co.kr.compig.global.keycloak.KeycloakProperties;
+import co.kr.compig.global.utils.ApplicationContextUtil;
 import co.kr.compig.global.utils.GsonLocalDateTimeAdapter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +59,6 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class MemberService {
 
-	private final List<SocialLoginService> loginServices;
 	private final MemberRepository memberRepository;
 	private final MemberRepositoryCustom memberRepositoryCustom;
 	private final MemberGroupRepository memberGroupRepository;
@@ -147,18 +145,12 @@ public class MemberService {
 		return memberById.getId();
 	}
 
-	public SocialLoginService getLoginService(MemberRegisterType memberRegisterType) {
-		for (SocialLoginService loginService : loginServices) {
-			if (memberRegisterType.equals(loginService.getServiceName())) {
-				log.info("login service name: {}", loginService.getServiceName());
-				return loginService;
-			}
-		}
-		return new LoginServiceImpl();
-	}
-
 	public Object doSocialLogin(SocialLoginRequest socialLoginRequest) {
-		SocialLoginService loginService = this.getLoginService(socialLoginRequest.getMemberRegisterType());
+		SocialLoginService loginService = ApplicationContextUtil.getBean(
+				socialLoginRequest.getMemberRegisterType().getServiceName(), SocialLoginService.class)
+			.orElseThrow(
+				() -> new BizException(String.format("### 로그인 서비스 [%s] 없음###",
+					socialLoginRequest.getMemberRegisterType().getServiceName())));
 		SocialUserResponse socialUserResponse;
 		if (socialLoginRequest.getOauthType() != OauthType.AUTH_CODE) {
 			socialUserResponse = loginService.tokenSocialUserResponse(socialLoginRequest);

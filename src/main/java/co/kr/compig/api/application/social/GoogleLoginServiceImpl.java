@@ -5,7 +5,6 @@ import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
@@ -33,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Qualifier("googleLogin")
 public class GoogleLoginServiceImpl implements SocialLoginService {
 
 	private final GoogleAuthApi googleAuthApi;
@@ -49,14 +47,9 @@ public class GoogleLoginServiceImpl implements SocialLoginService {
 			.build();
 	}
 
-	@Override
-	public MemberRegisterType getServiceName() {
-		return MemberRegisterType.GOOGLE;
-	}
-
 	@Override //token
 	public SocialUserResponse tokenSocialUserResponse(SocialLoginRequest socialLoginRequest) {
-		log.info(getServiceName().getCode() + " appSocialUserResponse");
+		log.info(socialLoginRequest.getMemberRegisterType() + " tokenSocialUserResponse");
 		try {
 			ResponseEntity<?> response = googleAuthApi.accessTokenToTokenInfo(
 				socialLoginRequest.getToken());
@@ -73,7 +66,7 @@ public class GoogleLoginServiceImpl implements SocialLoginService {
 
 			return SocialUserResponse.builder()
 				.socialId(googleLoginResponse.getSub())
-				.memberRegisterType(getServiceName())
+				.memberRegisterType(socialLoginRequest.getMemberRegisterType())
 				.email(googleLoginResponse.getEmail())
 				.build();
 		} catch (HttpServerErrorException e) {
@@ -89,7 +82,7 @@ public class GoogleLoginServiceImpl implements SocialLoginService {
 
 	@Override //code
 	public SocialUserResponse codeSocialUserResponse(SocialLoginRequest socialLoginRequest) {
-		log.info(getServiceName().getCode() + " webSocialUserResponse");
+		log.info(MemberRegisterType.NAVER + " codeSocialUserResponse");
 		SocialAuthResponse tokens = this.getTokens(socialLoginRequest.getCode());
 		return this.idTokenToUserInfo(tokens.getId_token());
 	}
@@ -145,7 +138,7 @@ public class GoogleLoginServiceImpl implements SocialLoginService {
 
 			return SocialUserResponse.builder()
 				.socialId(googleLoginResponse.getSub())
-				.memberRegisterType(getServiceName())
+				.memberRegisterType(MemberRegisterType.GOOGLE)
 				.email(googleLoginResponse.getEmail())
 				.name(googleLoginResponse.getName())
 				.build();
