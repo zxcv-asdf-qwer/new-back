@@ -46,8 +46,9 @@ public class AdminMemberController {
 
 	@Operation(summary = "관리자 memberId 조회")
 	@GetMapping("/{memberId}")
-	public ResponseEntity<AdminMemberResponse> getAdminByMemberId(@PathVariable String memberId) {
-		return ResponseEntity.ok(memberService.getMemberResponseByMemberId(memberId));
+	public ResponseEntity<Response<AdminMemberResponse>> getAdminByMemberId(@PathVariable String memberId) {
+		return ResponseEntity.ok().body(Response.<AdminMemberResponse>builder()
+			.data(memberService.getMemberResponseByMemberId(memberId)).build());
 	}
 
 	@Operation(summary = "관리자 memberId 수정")

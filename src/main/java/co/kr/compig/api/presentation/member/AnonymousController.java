@@ -13,6 +13,7 @@ import co.kr.compig.api.presentation.member.request.AdminMemberCreate;
 import co.kr.compig.api.presentation.member.request.LoginRequest;
 import co.kr.compig.api.presentation.member.request.SocialCreateRequest;
 import co.kr.compig.api.presentation.member.request.SocialLoginRequest;
+import co.kr.compig.api.presentation.member.response.LoginResponse;
 import co.kr.compig.global.dto.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -48,8 +49,8 @@ public class AnonymousController {
 
 	@Operation(summary = "관리자 로그인")
 	@PostMapping(path = "/login")
-	public ResponseEntity<Response<?>> doLogin(@RequestBody LoginRequest loginRequest) {
-		return ResponseEntity.ok().body(Response.builder()
+	public ResponseEntity<Response<LoginResponse>> doLogin(@RequestBody LoginRequest loginRequest) {
+		return ResponseEntity.ok().body(Response.<LoginResponse>builder()
 			.data(memberService.doLogin(loginRequest))
 			.build());
 	}

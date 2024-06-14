@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.kr.compig.api.application.member.MemberService;
+import co.kr.compig.api.presentation.member.response.MemberResponse;
+import co.kr.compig.global.dto.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,15 +27,13 @@ public class UserController {
 
 	@Operation(summary = "내정보 가져오기", description = "내정보 가져오기")
 	@GetMapping
-	public ResponseEntity<?> findMe() {
-		memberService.getMyInfo();
-		return ResponseEntity.ok(memberService.getMyInfo());
+	public ResponseEntity<Response<MemberResponse>> findMe() {
+		return ResponseEntity.ok().body(Response.<MemberResponse>builder().data(memberService.getMyInfo()).build());
 	}
 
 	@Operation(summary = "로그아웃", description = "로그아웃")
 	@GetMapping("/logout")
-	public ResponseEntity<?> getAdminPage(
-		@ParameterObject @RequestParam String refreshToken) {
+	public ResponseEntity<Response<?>> getAdminPage(@ParameterObject @RequestParam String refreshToken) {
 		memberService.logout(refreshToken);
 		return ResponseEntity.noContent().build();
 	}
