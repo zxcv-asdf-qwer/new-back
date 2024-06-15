@@ -20,6 +20,7 @@ import co.kr.compig.global.utils.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +41,7 @@ public class UserController {
 
 	@Operation(summary = "로그아웃", description = "로그아웃")
 	@GetMapping("/logout")
-	public ResponseEntity<Response<?>> getAdminPage(@ParameterObject @RequestParam String refreshToken) {
+	public ResponseEntity<Response<?>> logout(@ParameterObject @RequestParam String refreshToken) {
 		memberService.logout(refreshToken);
 		return ResponseEntity.noContent().build();
 	}
@@ -48,14 +49,14 @@ public class UserController {
 	@Operation(summary = "수정")
 	@PutMapping
 	public ResponseEntity<Response<?>> userUpdate(
-		@RequestBody MemberUpdateRequest memberUpdateRequest) {
+		@RequestBody @Valid MemberUpdateRequest memberUpdateRequest) {
 		memberService.updateMember(memberUpdateRequest);
 		return ResponseEntity.created(URI.create("/users")).build();
 	}
 
 	@Operation(summary = "탈퇴")
 	@PutMapping("/leave")
-	public ResponseEntity<Response<?>> doUserLeave(@RequestBody LeaveRequest leaveRequest) {
+	public ResponseEntity<Response<?>> doUserLeave(@RequestBody @Valid LeaveRequest leaveRequest) {
 		memberService.doUserLeave(SecurityUtil.getMemberId(), leaveRequest);
 		return ResponseEntity.ok().build();
 	}

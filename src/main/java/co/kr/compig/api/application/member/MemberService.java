@@ -190,7 +190,7 @@ public class MemberService {
 		Member member = optionalMember.orElseGet(() -> {
 			// 중복되지 않는 경우 새 회원 생성 후 반환
 			Member newMember = socialCreateRequest.converterEntity();
-			this.setReferenceDomain(socialCreateRequest.getUserType(), newMember);
+			this.setReferenceDomain(newMember.getUserType(), newMember);
 			newMember.createUserKeyCloak(socialCreateRequest.getSocialId(), socialCreateRequest.getUserNm());
 			newMember.passwordEncode();
 

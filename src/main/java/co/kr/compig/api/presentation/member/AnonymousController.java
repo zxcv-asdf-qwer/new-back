@@ -33,7 +33,7 @@ public class AnonymousController {
 
 	@Operation(summary = "소셜 로그인")
 	@PostMapping(path = "/social-login")
-	public ResponseEntity<Response<?>> doSocialLogin(@RequestBody SocialLoginRequest socialLoginRequest) {
+	public ResponseEntity<Response<?>> doSocialLogin(@RequestBody @Valid SocialLoginRequest socialLoginRequest) {
 		return ResponseEntity.ok().body(Response.builder()
 			.data(memberService.doSocialLogin(socialLoginRequest))
 			.build());
@@ -41,22 +41,22 @@ public class AnonymousController {
 
 	@Operation(summary = "소셜 회원가입")
 	@PostMapping(path = "/social")
-	public ResponseEntity<Response<?>> doSocialLogin(@RequestBody SocialCreateRequest socialCreateRequest) {
+	public ResponseEntity<Response<?>> doSocialLogin(@RequestBody @Valid SocialCreateRequest socialCreateRequest) {
 		return ResponseEntity.ok().body(Response.builder()
 			.data(memberService.doSocialCreate(socialCreateRequest))
 			.build());
 	}
 
 	@Operation(summary = "관리자 로그인")
-	@PostMapping(path = "/login")
-	public ResponseEntity<Response<LoginResponse>> doLogin(@RequestBody LoginRequest loginRequest) {
+	@PostMapping(path = "/admin-login")
+	public ResponseEntity<Response<LoginResponse>> doLogin(@RequestBody @Valid LoginRequest loginRequest) {
 		return ResponseEntity.ok().body(Response.<LoginResponse>builder()
 			.data(memberService.doLogin(loginRequest))
 			.build());
 	}
 
 	@Operation(summary = "관리자 회원가입")
-	@PostMapping
+	@PostMapping(path = "/admin")
 	public ResponseEntity<Response<?>> adminCreate(
 		@RequestBody @Valid AdminMemberCreate adminMemberCreate) {
 		return ResponseEntity.ok().body(Response.<Map<String, String>>builder()
