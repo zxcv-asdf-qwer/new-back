@@ -176,7 +176,7 @@ public class MemberService {
 		if (optionalMember.isPresent()) {
 			Member member = optionalMember.get();
 			// 공통 로직 처리: 키클락 로그인 실행
-			return this.getKeycloakAccessToken(member.getEmail(), member.getEmail() + member.getInternalRandomKey());
+			return this.getKeycloakAccessToken(loginRequest.getUserId(), loginRequest.getUserPw());
 			// 키클락 로그인 실행
 		}
 		throw new BizException("회원가입이 필요합니다.");
