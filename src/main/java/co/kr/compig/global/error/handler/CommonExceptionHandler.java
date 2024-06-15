@@ -88,7 +88,9 @@ public class CommonExceptionHandler {
 	}
 
 	private void fieldErrorLog(org.springframework.validation.FieldError fieldErrors) {
-		log.error(String.format("objectName -> %s\nmessage -> %s", fieldErrors.getObjectName(),
+		log.error(String.format("\nobjectName -> %s\nfieldName -> %s\nmessage -> %s",
+			fieldErrors.getObjectName(),
+			fieldErrors.getField(),
 			fieldErrors.getDefaultMessage()));
 	}
 
