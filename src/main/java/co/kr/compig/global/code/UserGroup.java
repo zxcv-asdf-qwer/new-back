@@ -3,7 +3,7 @@ package co.kr.compig.global.code;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum UserType implements BaseEnumCode<String> {
+public enum UserGroup implements BaseEnumCode<String> {
 	SYS_ADMIN("SYS_ADMIN", "슈퍼관리자"),
 	SYS_USER("SYS_USER", "내부사용자"),
 	USER("USER", "회원"),

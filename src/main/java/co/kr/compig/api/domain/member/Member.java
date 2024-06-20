@@ -30,8 +30,7 @@ import co.kr.compig.global.code.DeptCode;
 import co.kr.compig.global.code.GenderCode;
 import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.UseYn;
-import co.kr.compig.global.code.UserType;
-import co.kr.compig.global.code.converter.DeptCodeConverter;
+import co.kr.compig.global.code.UserGroup;
 import co.kr.compig.global.code.converter.UserTypeConverter;
 import co.kr.compig.global.embedded.CreatedAndUpdated;
 import co.kr.compig.global.error.exception.BizException;
@@ -96,11 +95,7 @@ public class Member {
 
 	@Column(length = 10)
 	@Convert(converter = UserTypeConverter.class)
-	private UserType userType; // 사용자 구분
-
-	@Column(length = 10)
-	@Convert(converter = DeptCodeConverter.class)
-	private DeptCode deptCode; // 부서 구분
+	private UserGroup userGroup; // 사용자 구분
 
 	@Column(length = 10)
 	@Enumerated(EnumType.STRING)
@@ -253,8 +248,7 @@ public class Member {
 			.email(this.email)
 			.gender(this.gender)
 			.useYn(this.useYn)
-			.userType(this.userType)
-			.deptCode(this.deptCode)
+			.userGroup(this.userGroup)
 			.memberRegisterType(this.memberRegisterType)
 			.address1(this.address1)
 			.address2(this.address2)
@@ -274,7 +268,6 @@ public class Member {
 			.userNm(this.userNm)
 			.telNo(this.telNo)
 			.email(this.email)
-			.deptCode(this.deptCode)
 			.build();
 
 		memberResponse.setGroups(this.groups.stream().map(MemberGroup::converterDto).collect(Collectors.toSet()));
@@ -304,9 +297,8 @@ public class Member {
 			this.telNo = adminMemberUpdate.getTelNo();
 		}
 		if (adminMemberUpdate.getDeptCode() != null) {
-			this.userType =
-				adminMemberUpdate.getDeptCode().equals(DeptCode.DEVELOPER) ? UserType.SYS_ADMIN : UserType.SYS_USER;
-			this.deptCode = adminMemberUpdate.getDeptCode();
+			this.userGroup =
+				adminMemberUpdate.getDeptCode().equals(DeptCode.DEVELOPER) ? UserGroup.SYS_ADMIN : UserGroup.SYS_USER;
 		}
 
 		this.removeAllGroups(this.groups.stream()
@@ -343,7 +335,7 @@ public class Member {
 		this.userNm = memberUpdateRequest.getUserNm();
 		this.telNo = memberUpdateRequest.getTelNo();
 		this.gender = memberUpdateRequest.getGender();
-		this.userType = memberUpdateRequest.getUserType();
+		this.userGroup = memberUpdateRequest.getUserGroup();
 		this.address1 = memberUpdateRequest.getAddress1();
 		this.address2 = memberUpdateRequest.getAddress2();
 		this.introduce = memberUpdateRequest.getIntroduce();

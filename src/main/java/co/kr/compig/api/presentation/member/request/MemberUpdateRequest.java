@@ -5,7 +5,7 @@ import java.util.List;
 import org.hibernate.validator.constraints.Length;
 
 import co.kr.compig.global.code.GenderCode;
-import co.kr.compig.global.code.UserType;
+import co.kr.compig.global.code.UserGroup;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,7 +32,7 @@ public class MemberUpdateRequest {
 	private GenderCode gender; // 성별
 	@NotNull
 	@Schema(description = "사용자 타입", example = "SYS_ADMIN")
-	private UserType userType; //사용자 타입
+	private UserGroup userGroup; //사용자 타입
 	@Schema(description = "주소")
 	private String address1; //주소
 	@Schema(description = "주소")

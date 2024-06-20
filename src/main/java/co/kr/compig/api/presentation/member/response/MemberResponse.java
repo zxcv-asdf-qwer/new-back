@@ -7,7 +7,7 @@ import co.kr.compig.global.code.DeptCode;
 import co.kr.compig.global.code.GenderCode;
 import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.UseYn;
-import co.kr.compig.global.code.UserType;
+import co.kr.compig.global.code.UserGroup;
 import co.kr.compig.global.dto.BaseAudit;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,7 +29,7 @@ public class MemberResponse extends BaseAudit {
 	private String telNo; // 연락처
 	private GenderCode gender; // 성별
 	private UseYn useYn; // 사용유무
-	private UserType userType; //사용자 타입
+	private UserGroup userGroup; //사용자 타입
 	private DeptCode deptCode; // 부서 구분
 	private MemberRegisterType memberRegisterType; // 회원가입 유형
 	private String address1; //주소

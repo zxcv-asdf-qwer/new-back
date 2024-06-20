@@ -4,10 +4,13 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import co.kr.compig.api.domain.member.Member;
 import co.kr.compig.api.domain.menu.Menu;
+import co.kr.compig.global.code.UserRole;
 import co.kr.compig.global.embedded.CreatedAndUpdated;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
@@ -41,8 +44,8 @@ public class MenuPermission {
 	@Column(name = "menu_permission_id")
 	private Long id; // MenuPermission id
 
-	@Column(length = 50)
-	private String groupKey; // Group key
+	@Enumerated(EnumType.STRING)
+	private UserRole userRole; // 권한
 
   /* =================================================================
    * Domain mapping

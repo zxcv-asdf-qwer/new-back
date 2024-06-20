@@ -6,7 +6,7 @@ import co.kr.compig.api.domain.member.Member;
 import co.kr.compig.global.code.DeptCode;
 import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.UseYn;
-import co.kr.compig.global.code.UserType;
+import co.kr.compig.global.code.UserGroup;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -59,8 +59,7 @@ public class AdminMemberCreate {
 			.userPw(this.userPw)
 			.telNo(this.telNo)
 			.useYn(UseYn.Y)
-			.userType(this.deptCode.equals(DeptCode.DEVELOPER) ? UserType.SYS_ADMIN : UserType.SYS_USER)
-			.deptCode(this.deptCode)
+			.userGroup(this.deptCode.equals(DeptCode.DEVELOPER) ? UserGroup.SYS_ADMIN : UserGroup.SYS_USER)
 			.memberRegisterType(MemberRegisterType.GENERAL)
 			.build();
 	}

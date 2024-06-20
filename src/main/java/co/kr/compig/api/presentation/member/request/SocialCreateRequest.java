@@ -4,7 +4,7 @@ import static co.kr.compig.global.utils.KeyGen.*;
 
 import co.kr.compig.api.domain.member.Member;
 import co.kr.compig.global.code.MemberRegisterType;
-import co.kr.compig.global.code.UserType;
+import co.kr.compig.global.code.UserGroup;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,7 +37,7 @@ public class SocialCreateRequest {
 			.userPw(this.email + randomTimeKey)
 			.internalRandomKey(randomTimeKey)
 			.memberRegisterType(this.memberRegisterType)
-			.userType(UserType.USER)
+			.userGroup(UserGroup.USER)
 			.telNo(this.telNo)
 			.build();
 	}

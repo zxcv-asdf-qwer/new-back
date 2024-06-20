@@ -4,13 +4,13 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
 import org.apache.ibatis.type.MappedTypes;
 
-import co.kr.compig.global.code.UserType;
+import co.kr.compig.global.code.UserGroup;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
-@MappedTypes(UserType.class)
+@MappedTypes(UserGroup.class)
 @MappedJdbcTypes(value = JdbcType.VARCHAR)
-public class UserTypeConverter extends AbstractBaseEnumConverter<UserType, String> {
+public class UserTypeConverter extends AbstractBaseEnumConverter<UserGroup, String> {
 
 	@Override
 	protected String getEnumName() {
@@ -18,7 +18,7 @@ public class UserTypeConverter extends AbstractBaseEnumConverter<UserType, Strin
 	}
 
 	@Override
-	protected UserType[] getValueList() {
-		return UserType.values();
+	protected UserGroup[] getValueList() {
+		return UserGroup.values();
 	}
 }

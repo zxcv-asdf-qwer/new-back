@@ -50,7 +50,7 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.web.cors.CorsUtils;
 
-import co.kr.compig.global.code.UserType;
+import co.kr.compig.global.code.UserGroup;
 import co.kr.compig.global.security.CustomOidcUserService;
 import co.kr.compig.global.security.HttpCookieOAuth2AuthorizationRequestRepository;
 import co.kr.compig.global.security.converter.CustomJwtAuthenticationConverter;
@@ -77,11 +77,11 @@ public class SecurityConfig {
 		http.authorizeHttpRequests(auth -> auth.requestMatchers(CorsUtils::isPreFlightRequest)
 			.permitAll()
 			.requestMatchers(antMatcher("/admin/**"))
-			.hasAnyRole(UserType.SYS_USER.getCode(), UserType.SYS_ADMIN.getCode())
+			.hasAnyRole(UserGroup.SYS_USER.getCode(), UserGroup.SYS_ADMIN.getCode())
 			.requestMatchers(
 				antMatcher("/swagger-ui/**"),
 				antMatcher("/v3/**"))
-			.hasAnyRole(UserType.SYS_ADMIN.getCode())
+			.hasAnyRole(UserGroup.SYS_ADMIN.getCode())
 			.requestMatchers(
 				antMatcher("/pb/**"),
 				antMatcher("/actuator/**"),

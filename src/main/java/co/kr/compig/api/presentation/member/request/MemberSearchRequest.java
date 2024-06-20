@@ -2,7 +2,7 @@ package co.kr.compig.api.presentation.member.request;
 
 import java.util.List;
 
-import co.kr.compig.global.code.UserType;
+import co.kr.compig.global.code.UserGroup;
 import co.kr.compig.global.dto.pagination.PageableRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -18,6 +18,6 @@ public class MemberSearchRequest extends PageableRequest {
 	@Schema(description = "휴대전화 번호", example = "01011111111")
 	private String telNo;
 	@Schema(description = "사용자 타입", example = "SYS_ADMIN")
-	private List<UserType> userType;
+	private List<UserGroup> userGroup;
 
 }

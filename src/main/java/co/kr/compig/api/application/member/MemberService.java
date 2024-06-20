@@ -43,7 +43,7 @@ import co.kr.compig.api.presentation.member.response.SocialUserResponse;
 import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.OauthType;
 import co.kr.compig.global.code.UseYn;
-import co.kr.compig.global.code.UserType;
+import co.kr.compig.global.code.UserGroup;
 import co.kr.compig.global.error.exception.BizException;
 import co.kr.compig.global.error.exception.NotExistDataException;
 import co.kr.compig.global.keycloak.KeycloakHandler;
@@ -72,14 +72,14 @@ public class MemberService {
 
 	public String adminCreate(AdminMemberCreate adminMemberCreate) {
 		Member member = adminMemberCreate.convertEntity();
-		setReferenceDomain(member.getUserType(), member);
+		setReferenceDomain(member.getUserGroup(), member);
 		member.createUserKeyCloak(null, null);
 		member.passwordEncode();
 
 		return memberRepository.save(member).getId();
 	}
 
-	public void setReferenceDomain(UserType userType, Member member) {
+	public void setReferenceDomain(UserGroup userGroup, Member member) {
 		// keycloakHandler를 사용하여 그룹 리스트를 가져옴
 		List<GroupRepresentation> groups = keycloakHandler.getGroups().groups();
 
@@ -89,7 +89,7 @@ public class MemberService {
 			.flatMap(group -> Stream.concat(Stream.of(group), group.getSubGroups().stream())).toList();
 
 		Optional<GroupRepresentation> handler = allGroups.stream()
-			.filter(group -> group.getName().equals(userType.getCode()))
+			.filter(group -> group.getName().equals(userGroup.getCode()))
 			.findFirst();
 
 		Optional<MemberGroup> memberGroup = memberGroupRepository.findByMember_id(member.getId());
@@ -133,7 +133,7 @@ public class MemberService {
 	@Transactional(readOnly = true)
 	public AdminMemberResponse getMemberResponseByMemberId(String memberId) {
 		Member member = this.getAbleMemberById(memberId);
-		if (!(member.getUserType() == UserType.SYS_ADMIN || member.getUserType() == UserType.SYS_USER)) {
+		if (!(member.getUserGroup() == UserGroup.SYS_ADMIN || member.getUserGroup() == UserGroup.SYS_USER)) {
 			throw new BizException("권한이 없습니다.");
 		}
 		return member.toAdminMemberResponse();
@@ -142,7 +142,7 @@ public class MemberService {
 	public String updateAdminById(String memberId, AdminMemberUpdate adminMemberUpdate) {
 		Member memberById = this.getAbleMemberById(memberId);
 		memberById.updateAdminMember(adminMemberUpdate);
-		setReferenceDomain(memberById.getUserType(), memberById);
+		setReferenceDomain(memberById.getUserGroup(), memberById);
 		memberById.updateUserKeyCloak();
 		memberById.passwordEncode();
 		return memberById.getId();
@@ -190,7 +190,7 @@ public class MemberService {
 		Member member = optionalMember.orElseGet(() -> {
 			// 중복되지 않는 경우 새 회원 생성 후 반환
 			Member newMember = socialCreateRequest.converterEntity();
-			this.setReferenceDomain(newMember.getUserType(), newMember);
+			this.setReferenceDomain(newMember.getUserGroup(), newMember);
 			newMember.createUserKeyCloak(socialCreateRequest.getSocialId(), socialCreateRequest.getUserNm());
 			newMember.passwordEncode();
 
@@ -259,7 +259,7 @@ public class MemberService {
 
 	public void updateMember(MemberUpdateRequest memberUpdateRequest) {
 		Member memberById = this.getMemberById(SecurityUtil.getMemberId());
-		setReferenceDomain(memberUpdateRequest.getUserType(), memberById);
+		setReferenceDomain(memberUpdateRequest.getUserGroup(), memberById);
 		memberById.updateUserKeyCloak();
 		memberById.update(memberUpdateRequest);
 	}
