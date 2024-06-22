@@ -77,8 +77,8 @@ public class MemberRepositoryCustom {
 
 		JPAQuery<Member> query = createBaseQuery(predicate)
 			.select(member)
-			.where(member.userType.eq(UserGroup.SYS_ADMIN)
-				.or(member.userType.eq(UserGroup.SYS_USER))
+			.where(member.userGroup.eq(UserGroup.SYS_ADMIN)
+				.or(member.userGroup.eq(UserGroup.SYS_USER))
 			)
 			.where(member.useYn.eq(UseYn.Y));
 		Pageable pageable = request.pageable();
@@ -97,8 +97,8 @@ public class MemberRepositoryCustom {
 
 		JPAQuery<Long> countQuery = createBaseQuery(predicate)
 			.select(member.count())
-			.where(member.userType.eq(UserGroup.SYS_ADMIN)
-				.or(member.userType.eq(UserGroup.SYS_USER)));
+			.where(member.userGroup.eq(UserGroup.SYS_ADMIN)
+				.or(member.userGroup.eq(UserGroup.SYS_USER)));
 
 		return PageableExecutionUtils.getPage(responses, pageable, countQuery::fetchOne);
 	}
