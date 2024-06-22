@@ -3,6 +3,7 @@ package co.kr.compig.global.config;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -22,7 +23,8 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
-
+	@Value("${client.url}")
+	private String clientUrl;
 	private final ObjectMapper objectMapper;
 
 	@Override
@@ -43,7 +45,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/*/**")
-			.allowedOriginPatterns("http://localhost:3000") // 허용할 클라이언트 도메인
+			.allowedOriginPatterns(clientUrl) // 허용할 클라이언트 도메인
 			.allowedMethods("*")
 			.allowedHeaders("*")
 			.allowCredentials(true)

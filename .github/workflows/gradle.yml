@@ -75,7 +75,7 @@ jobs:
           touch scripts/deploy.sh
           echo "aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin $ECR_REGISTRY" >> scripts/deploy.sh
           echo "docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA" >> scripts/deploy.sh
-          echo "docker run -p 80:8080 -p 443:8080 -e PROFILE=local -d --restart always --name compig-back $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA" >> scripts/deploy.sh
+          echo "docker run -p 80:8080 -p 443:8080 -e PROFILE=dev -d --restart always --name compig-back $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA" >> scripts/deploy.sh
       #스크립트들을 압축하여 S3에 업로드
       - name: upload to s3
         run: |
