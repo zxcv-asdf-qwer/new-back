@@ -72,8 +72,7 @@ public class SecurityConfig {
 			.hasAnyRole(UserGroup.SYS_ADMIN.getCode())
 			.requestMatchers(
 				antMatcher("/pb/**"),
-				antMatcher("/actuator/**"),
-				antMatcher("/favicon.ico")
+				antMatcher("/actuator/**")
 			)
 			.permitAll()
 			.anyRequest()
