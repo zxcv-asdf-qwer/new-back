@@ -5,6 +5,7 @@ import java.net.URI;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,6 +45,14 @@ public class UserController {
 	public ResponseEntity<Response<?>> logout(@ParameterObject @RequestParam String refreshToken) {
 		memberService.logout(refreshToken);
 		return ResponseEntity.noContent().build();
+	}
+
+	@Operation(summary = "refresh token 발급", description = "refresh token 발급")
+	@PostMapping("/refresh-token")
+	public ResponseEntity<Response<?>> tokenRefresh(@ParameterObject @RequestParam String refreshToken) {
+		return ResponseEntity.ok().body(Response.builder()
+			.data(memberService.getKeycloakRefreshToken(refreshToken))
+			.build());
 	}
 
 	@Operation(summary = "수정")

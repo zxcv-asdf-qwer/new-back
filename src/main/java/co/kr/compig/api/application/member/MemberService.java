@@ -27,6 +27,7 @@ import co.kr.compig.api.domain.member.MemberRepository;
 import co.kr.compig.api.domain.member.MemberRepositoryCustom;
 import co.kr.compig.api.infra.auth.keycloak.KeycloakAuthApi;
 import co.kr.compig.api.infra.auth.keycloak.model.KeycloakAccessTokenRequest;
+import co.kr.compig.api.infra.auth.keycloak.model.KeycloakRefreshTokenRequest;
 import co.kr.compig.api.infra.auth.keycloak.model.LogoutRequest;
 import co.kr.compig.api.presentation.member.request.AdminMemberCreate;
 import co.kr.compig.api.presentation.member.request.AdminMemberUpdate;
@@ -210,6 +211,22 @@ public class MemberService {
 			.client_secret(keycloakProperties.getClientSecret())
 			.username(userId)
 			.password(userPw)
+			.build());
+		log.info("keycloak user response");
+		log.info(response.toString());
+
+		Gson gson = new GsonBuilder().setPrettyPrinting()
+			.registerTypeAdapter(LocalDateTime.class, new GsonLocalDateTimeAdapter())
+			.create();
+
+		return gson.fromJson(Objects.requireNonNull(response.getBody()).toString(), LoginResponse.class);
+	}
+
+	public LoginResponse getKeycloakRefreshToken(String refreshToken) {
+		ResponseEntity<?> response = keycloakAuthApi.getRefreshToken(KeycloakRefreshTokenRequest.builder()
+			.client_id(keycloakProperties.getClientId())
+			.client_secret(keycloakProperties.getClientSecret())
+			.refresh_token(refreshToken)
 			.build());
 		log.info("keycloak user response");
 		log.info(response.toString());
