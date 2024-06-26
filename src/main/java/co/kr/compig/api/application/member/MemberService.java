@@ -235,19 +235,23 @@ public class MemberService {
 	}
 
 	public LoginResponse getKeycloakRefreshToken(String refreshToken) {
-		ResponseEntity<?> response = keycloakAuthApi.getRefreshToken(KeycloakRefreshTokenRequest.builder()
-			.client_id(keycloakProperties.getClientId())
-			.client_secret(keycloakProperties.getClientSecret())
-			.refresh_token(refreshToken)
-			.build());
-		log.info("keycloak user response");
-		log.info(response.toString());
+		try {
+			ResponseEntity<?> response = keycloakAuthApi.getRefreshToken(KeycloakRefreshTokenRequest.builder()
+				.client_id(keycloakProperties.getClientId())
+				.client_secret(keycloakProperties.getClientSecret())
+				.refresh_token(refreshToken)
+				.build());
+			log.info("keycloak user response");
+			log.info(response.toString());
 
-		Gson gson = new GsonBuilder().setPrettyPrinting()
-			.registerTypeAdapter(LocalDateTime.class, new GsonLocalDateTimeAdapter())
-			.create();
+			Gson gson = new GsonBuilder().setPrettyPrinting()
+				.registerTypeAdapter(LocalDateTime.class, new GsonLocalDateTimeAdapter())
+				.create();
 
-		return gson.fromJson(Objects.requireNonNull(response.getBody()).toString(), LoginResponse.class);
+			return gson.fromJson(Objects.requireNonNull(response.getBody()).toString(), LoginResponse.class);
+		} catch (Exception e) {
+			throw new BizException("access token 재발급 실패");
+		}
 	}
 
 	public void doUserLeave(String memberId, LeaveRequest leaveRequest) {
@@ -274,11 +278,15 @@ public class MemberService {
 	}
 
 	public void logout(String refreshToken) {
-		keycloakAuthApi.logout(LogoutRequest.builder()
-			.client_id(keycloakProperties.getClientId())
-			.client_secret(keycloakProperties.getClientSecret())
-			.refresh_token(refreshToken)
-			.build());
+		try {
+			keycloakAuthApi.logout(LogoutRequest.builder()
+				.client_id(keycloakProperties.getClientId())
+				.client_secret(keycloakProperties.getClientSecret())
+				.refresh_token(refreshToken)
+				.build());
+		} catch (Exception e) {
+			//notthing
+		}
 	}
 
 	public MemberResponse getMyInfo() {
