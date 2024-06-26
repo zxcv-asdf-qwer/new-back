@@ -165,9 +165,14 @@ public class MemberService {
 		Optional<Member> optionalMember = memberRepository.findByEmailAndUseYn(socialUserResponse.getEmail(), UseYn.Y);
 		if (optionalMember.isPresent()) {
 			Member member = optionalMember.get();
-			// 공통 로직 처리: 키클락 로그인 실행
-			return this.getKeycloakAccessToken(member.getEmail(), member.getEmail() + member.getInternalRandomKey());
-			// 키클락 로그인 실행
+			try {
+				// 공통 로직 처리: 키클락 로그인 실행
+				return this.getKeycloakAccessToken(member.getEmail(),
+					member.getEmail() + member.getInternalRandomKey());
+				// 키클락 로그인 실행
+			} catch (Exception e) {
+				throw new BizException("로그인 실패");
+			}
 		}
 		return socialUserResponse;
 	}
@@ -175,10 +180,13 @@ public class MemberService {
 	public LoginResponse doLogin(LoginRequest loginRequest) {
 		Optional<Member> optionalMember = memberRepository.findByUserIdAndUseYn(loginRequest.getUserId(), UseYn.Y);
 		if (optionalMember.isPresent()) {
-			Member member = optionalMember.get();
-			// 공통 로직 처리: 키클락 로그인 실행
-			return this.getKeycloakAccessToken(loginRequest.getUserId(), loginRequest.getUserPw());
-			// 키클락 로그인 실행
+			try {
+				// 공통 로직 처리: 키클락 로그인 실행
+				return this.getKeycloakAccessToken(loginRequest.getUserId(), loginRequest.getUserPw());
+				// 키클락 로그인 실행
+			} catch (Exception e) {
+				throw new BizException("로그인 실패");
+			}
 		}
 		throw new BizException("회원가입이 필요합니다.");
 	}
@@ -199,10 +207,14 @@ public class MemberService {
 
 			return memberRepository.findById(newMemberId).orElseThrow(() -> new RuntimeException("회원 생성 후 조회 실패"));
 		});
-		// 공통 로직 처리: 키클락 로그인 실행
-		return this.getKeycloakAccessToken(member.getEmail(),
-			member.getEmail() + member.getInternalRandomKey());
-		// 키클락 로그인 실행
+		try {
+			// 공통 로직 처리: 키클락 로그인 실행
+			return this.getKeycloakAccessToken(member.getEmail(),
+				member.getEmail() + member.getInternalRandomKey());
+			// 키클락 로그인 실행
+		} catch (Exception e) {
+			throw new BizException("로그인 실패");
+		}
 	}
 
 	private LoginResponse getKeycloakAccessToken(String userId, String userPw) {
