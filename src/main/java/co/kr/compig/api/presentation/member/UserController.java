@@ -47,7 +47,7 @@ public class UserController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@Operation(summary = "refresh token 발급", description = "refresh token 발급")
+	@Operation(summary = "정", description = "refresh token access token 재발급")
 	@PostMapping("/refresh-token")
 	public ResponseEntity<Response<?>> tokenRefresh(@ParameterObject @RequestParam String refreshToken) {
 		return ResponseEntity.ok().body(Response.builder()
