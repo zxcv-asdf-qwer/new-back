@@ -6,6 +6,7 @@ import co.kr.compig.api.domain.member.Member;
 import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.UserGroup;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +24,7 @@ public class SocialCreateRequest {
 	private String userNm; //사용자 이름 ex)홍 길동
 	@NotBlank
 	private String email; //이메일
-	@NotBlank
+	@NotNull
 	private MemberRegisterType memberRegisterType; //소셜로그인 타입
 	private String telNo; // 핸드폰 번호
 	private boolean marketingAppPush; // 앱 푸시알림 수신동의
