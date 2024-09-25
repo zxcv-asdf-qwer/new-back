@@ -7,6 +7,7 @@ import co.kr.compig.global.code.DeptCode;
 import co.kr.compig.global.code.MemberRegisterType;
 import co.kr.compig.global.code.UseYn;
 import co.kr.compig.global.code.UserGroup;
+import co.kr.compig.global.validator.annotaion.ValidPhoneNum;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -44,6 +45,7 @@ public class AdminMemberCreate {
 	private String userPw; // 사용자 비밀번호
 
 	@Schema(description = "휴대폰 번호", example = "01011111111")
+	@ValidPhoneNum
 	private String telNo; // 휴대폰번호
 
 	@Parameter(description = "DEVELOPER, OPERATION")
