@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.kr.compig.api.domain.menu.MenuMapper">
+
+    <select id="selectMenuTree" resultType="menuTree" parameterType="String">
+        WITH RECURSIVE menu_tree(menu_id, parent_id, menu_nm,
+        menu_path, menu_url,
+        menu_div, menu_type, seq, level, use_yn,
+        path, cycle)
+        AS (SELECT menu_id::text,
+        0::text,
+        menu_nm,
+        menu_nm::text as menu_path,
+        menu_url,
+        menu_div,
+        menu_type,
+        seq,
+        1 as level,
+        use_yn,
+        ARRAY [seq::text || ',' || menu_id::text],
+        false
+        FROM menu
+        WHERE parent_id IS NULL
+        UNION ALL
+        SELECT g.menu_id::text,
+        g.parent_id::text,
+        g.menu_nm,
+        menu_path || ',' || g.menu_nm as menu_path,
+        g.menu_url,
+        g.menu_div,
+        g.menu_type,
+        g.seq,
+        level + 1,
+        g.use_yn,
+        PATH || g.seq::text || g.menu_id::text,
+        g.menu_id::text = ANY (path)
+        FROM menu g,
+        menu_tree sb
+        WHERE g.parent_id::text = sb.menu_id::text
+        AND NOT cycle)
+        SELECT '0' as id,
+        null as parentId,
+        'All' as menuNm,
+        'All' as menuPath,
+        null as menuUrl,
+        'ROOT' as menuDiv,
+        'MENU' as menuType,
+        0 as seq,
+        0 as menuLvl,
+        'Y' as useYn,
+        'N' as isLeaf,
+        ARRAY ['0'] as path
+        UNION ALL
+        SELECT distinct id,
+        parentId,
+        menuNm,
+        menuPath,
+        menuUrl,
+        menuDiv,
+        menuType,
+        seq,
+        menuLvl,
+        useYn,
+        isLeaf,
+        path
+        FROM (SELECT mt.menu_id::bigint as id,
+        mt.parent_id::bigint as parentId,
+        mt.menu_nm as menuNm,
+        mt.menu_path as menuPath,
+        mt.menu_url as menuUrl,
+        mt.menu_div as menuDiv,
+        mt.menu_type as menuType,
+        mt.seq::int as seq,
+        mt.level as menuLvl,
+        mt.use_yn as useYn,
+        path as path,
+        -- cycle,
+        case
+        when (mt.level - lead(mt.level) over (order by mt.path)) > 0
+        then 'N'
+        else 'Y' end isLeaf
+        FROM menu_tree mt
+        <if test='memberId != null and memberId != ""'>
+            INNER JOIN (SELECT distinct menu_id
+            FROM menu_permission rl
+            WHERE (
+            rl.group_key in (SELECT tmg.group_key
+            FROM member tm
+            INNER JOIN member_group tmg
+            ON tm.member_id = tmg.member_id
+            WHERE tm.member_id = #{memberId})
+            OR
+            rl.member_id in (SELECT tm.member_id
+            FROM member tm
+            WHERE tm.member_id = #{memberId})
+            )) rl
+            ON mt.menu_id = rl.menu_id::text
+            WHERE mt.cycle != true
+        </if>
+        ) a
+        ORDER BY path
+    </select>
+
+</mapper>

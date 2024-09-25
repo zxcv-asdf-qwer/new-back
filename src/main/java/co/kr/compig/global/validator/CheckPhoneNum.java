@@ -21,13 +21,13 @@ public class CheckPhoneNum implements ConstraintValidator<ValidPhoneNum, String>
 		this.validPhoneNum = validHscode;
 	}
 
-	@Override //true 값이 유효, false 요효성 검사 실패
+	@Override //true 값이 유효, false 유효성 검사 실패
 	public boolean isValid(String value, ConstraintValidatorContext context) {
 		if (StringUtils.isEmpty(value)) {
 			return false;
 		}
 		if (isValidPhoneNumber(value)) {
-			return false;
+			return true;
 		}
 
 		context.buildConstraintViolationWithTemplate(messageUtil.getMessage(validPhoneNum.message()))
@@ -39,6 +39,6 @@ public class CheckPhoneNum implements ConstraintValidator<ValidPhoneNum, String>
 	private boolean isValidPhoneNumber(String phoneNumber) {
 		String data = RegExUtils.replaceAll(phoneNumber, "[^0-9]", "");
 
-		return data.length() >= 6 && data.length() <= 10;
+		return data.length() >= 6 && data.length() <= 11;
 	}
 }

@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import co.kr.compig.api.domain.permission.MenuPermission;
+import co.kr.compig.api.presentation.menu.request.MenuUpdateRequest;
+import co.kr.compig.api.presentation.menu.response.MenuDetailResponse;
 import co.kr.compig.global.code.MenuDivCode;
 import co.kr.compig.global.code.MenuTypeCode;
 import co.kr.compig.global.code.UseYn;
@@ -40,16 +43,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table
-@SequenceGenerator(
-	name = "menu_seq_gen", //시퀀스 제너레이터 이름
-	sequenceName = "menu_seq", //시퀀스 이름
-	initialValue = 1, //시작값
-	allocationSize = 1 //메모리를 통해 할당 할 범위 사이즈
-)
 public class Menu {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "menu_seq_gen")
 	@Column(name = "menu_id")
 	private Long id; // 메뉴코드
 
@@ -93,7 +89,20 @@ public class Menu {
 	/* =================================================================
 	 * Relation method
 	   ================================================================= */
-
+	public MenuDetailResponse toMenuDetailResponse() {
+		return MenuDetailResponse.builder()
+			.menuId(this.id)
+			.menuDiv(this.menuDiv)
+			.menuNm(this.menuNm)
+			.menuUrl(this.menuUrl)
+			.seq(this.seq)
+			.menuType(this.menuType)
+			.useYn(this.useYn)
+			.child(this.child.stream()
+				.map(Menu::toMenuDetailResponse)
+				.collect(Collectors.toList())) // Convert child Menu list
+			.build();
+	}
 	/* =================================================================
 	 * Default columns
 	   ================================================================= */
@@ -101,9 +110,21 @@ public class Menu {
 	@Builder.Default
 	private CreatedAndUpdated createdAndModified = new CreatedAndUpdated();
 
+	public void update(MenuUpdateRequest menuUpdateRequest, Menu parent) {
+		this.menuDiv = menuUpdateRequest.getMenuDiv();
+		this.menuNm = menuUpdateRequest.getMenuNm();
+		this.menuUrl = menuUpdateRequest.getMenuUrl();
+		this.seq = menuUpdateRequest.getSeq();
+		this.menuType = menuUpdateRequest.getMenuType();
+		this.useYn = menuUpdateRequest.getUseYn();
+		this.parent = parent;
+	}
 
   /* =================================================================
    * Business
      ================================================================= */
 
+	public void setParent(final Menu parent) {
+		this.parent = parent;
+	}
 }
